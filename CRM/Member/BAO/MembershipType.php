@@ -380,6 +380,9 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
         //month irrespective when you join during the month,
         //so if you join on 1 Jan or 15 Jan your start
         //date will always be 1 Jan
+        if($actualStartDate >= $membershipTypeDetails['fixed_period_rollover_day']){
+          $fixed_period_rollover = True;
+        }
         if (!$startDate) {
           $actualStartDate = $startDate = $year . '-' . $month . '-01';
         }
@@ -393,6 +396,17 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
       $year  = $date[0];
       $month = $date[1];
       $day   = $date[2];
+
+      if ( $membershipTypeDetails['period_type']   == 'fixed' &&
+           $membershipTypeDetails['duration_unit'] == 'month' &&
+           $membershipTypeDetails['duration_interval'] % 12 == 1 ) {
+          // CRM-10585
+          // Special case for annual/bi-annual/etc fixed-month memberships. The duration includes an extra month
+          // used to round up a partial month on the inital join. Renewals should not include the extra month, so
+          // it is removed here. This allows the end date to be extended by an even 12/24/36/etc months without
+          // adding an extra month of membership.
+          $membershipTypeDetails['duration_interval'] = $membershipTypeDetails['duration_interval'] - 1;
+      }
 
       switch ($membershipTypeDetails['duration_unit']) {
         case 'year':
@@ -409,6 +423,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
           if ($fixed_period_rollover) {
             //Fix Me: Currently we don't allow rollover if
             //duration interval is month
+            $month += 1;
           }
           break;
 
@@ -491,6 +506,17 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
       $membershipTypeDetails = self::getMembershipTypeDetails($membershipTypeID);
     }
     $statusDetails = CRM_Member_BAO_MembershipStatus::getMembershipStatus($statusID);
+
+    if ( $membershipTypeDetails['period_type']   == 'fixed' &&
+      $membershipTypeDetails['duration_unit'] == 'month' &&
+      $membershipTypeDetails['duration_interval'] % 12 == 1 ) {
+      // CRM-10585
+      // Special case for annual/bi-annual/etc fixed-month memberships. The duration includes an extra month
+      // used to round up a partial month on the inital join. Renewals should not include the extra month, so
+      // it is removed here. This allows the end date to be extended by an even 12/24/36/etc months without
+      // adding an extra month of membership.
+      $membershipTypeDetails['duration_interval'] = $membershipTypeDetails['duration_interval'] - 1;
+    }
 
     if ($statusDetails['is_current_member'] == 1) {
       $startDate = $membershipDetails[$membershipId]->start_date;
