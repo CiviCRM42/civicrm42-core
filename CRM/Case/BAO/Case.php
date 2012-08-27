@@ -1004,7 +1004,8 @@ INNER JOIN  civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_conta
                           ca.subject as subject, 
                           ca.is_deleted as deleted,
                           ca.priority_id as priority,
-                          ca.weight as weight ";
+                          ca.weight as weight,
+                          GROUP_CONCAT(ef.file_id) as attachment_ids ";
 
     $from = 'FROM civicrm_case_activity cca 
                   INNER JOIN civicrm_activity ca ON ca.id = cca.activity_id
@@ -1012,6 +1013,7 @@ INNER JOIN  civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_conta
                   INNER JOIN civicrm_option_group cog ON cog.name = "activity_type"
                   INNER JOIN civicrm_option_value cov ON cov.option_group_id = cog.id 
                          AND cov.value = ca.activity_type_id AND cov.is_active = 1
+                  LEFT JOIN civicrm_entity_file ef on ef.entity_table = "civicrm_activity" AND ef.entity_id = ca.id
                   LEFT OUTER JOIN civicrm_option_group og ON og.name="activity_status"
                   LEFT OUTER JOIN civicrm_option_value ov ON ov.option_group_id=og.id AND ov.name="Scheduled"
                   LEFT JOIN civicrm_activity_assignment caa 
@@ -1253,6 +1255,23 @@ INNER JOIN  civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_conta
       }
       if (self::checkPermission($dao->id, 'Copy To Case', $dao->activity_type_id)) {
         $url .= " | " . '<a href="#" onClick="Javascript:fileOnCase( \'copy\',' . $dao->id . ',' . $caseID . ' ); return false;">' . ts('Copy To Case') . '</a> ';
+      }
+
+      // if there are file attachments we will return how many and, if only one, add a link to it
+      if(!empty($dao->attachment_ids)){
+        $attachmentIDs = explode(',',$dao->attachment_ids);
+        $values[$dao->id]['no_attachments'] = count($attachmentIDs);
+        if($values[$dao->id]['no_attachments'] == 1){
+          // if there is only one it's easy to do a link - otherwise just flag it
+          $attachmentViewUrl = CRM_Utils_System::url(
+            "civicrm/file",
+            "reset=1&eid=" . $dao->id . "&id=" . $dao->attachment_ids,
+            FALSE,
+            NULL,
+            FALSE
+          );
+          $url .= " | " . "<a href=$attachmentViewUrl >" . ts('View Attachment') . '</a> ';
+        }
       }
 
       $values[$dao->id]['links'] = $url;
