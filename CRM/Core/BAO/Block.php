@@ -450,11 +450,17 @@ class CRM_Core_BAO_Block {
       // entity not associated with contact so concept of is_primary not relevant
       return;
     }
-    
+
     // if params is_primary then set all others to not be primary & exit out
     if (CRM_Utils_Array::value('is_primary', $params)) {
       $sql = "UPDATE $table SET is_primary = 0 WHERE contact_id = %1";
-      CRM_Core_DAO::executeQuery($sql, array(1 => array($contactId, 'Integer')));
+      $sqlParams = array(1 => array($contactId, 'Integer'));
+      // we don't want to create unecessary entries in the log_ tables so exclude the one we are working on
+      if(!empty($params['id'])){
+        $sql .= " AND id <> %2";
+        $sqlParams[2] = array($params['id'], 'Integer');
+      }
+      CRM_Core_DAO::executeQuery($sql, $sqlParams);
       return;
     }
 
@@ -462,7 +468,7 @@ class CRM_Core_BAO_Block {
     $existingEntities = new $class();
     $existingEntities->contact_id = $contactId;
     $existingEntities->orderBy('is_primary DESC');
-    if (!$existingEntities->find(TRUE)) {
+    if (!$existingEntities->find(TRUE) || !empty($params['id']) && $existingEntities->id == $params['id']) {
       // ie. if  no others is set to be primary then this has to be primary set to 1 so change
       $params['is_primary'] = 1;
       return;
