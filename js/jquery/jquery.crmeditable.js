@@ -205,7 +205,13 @@
         } else {
           settings.tooltip   = 'Click to edit...';
         }
-
+        if ($i.data('type')) {
+          settings.type = $i.data('type');
+          settings.onblur = 'submit';
+        }
+        if ($i.data('options')){
+          settings.data = $i.data('options');
+        }
         $i.addClass ('crm-editable-enabled');
         $i.editable(function(value,settings) {
         //$i.editable(function(value,editableSettings) {
@@ -243,6 +249,9 @@
                 editableSettings.error.call(this,entity,fieldName,value,data);
               },
               success: function (data) {
+                if ($i.data('options')){
+                  value = $i.data('options')[value];
+                }
                 editableSettings.success.call(this,entity,fieldName,value,data);
               }
             });
