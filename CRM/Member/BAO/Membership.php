@@ -1176,12 +1176,19 @@ AND civicrm_membership.is_test = %2";
     $form->assign('membership_assign', TRUE);
 
     $form->set('membershipTypeID', $membershipParams['selectMembership']);
-
     $membershipTypeID = $membershipParams['selectMembership'];
-    $membershipDetails = self::buildMembershipTypeValues($form, $membershipTypeID);
 
+    if(!is_array($membershipTypeID) || count($membershipTypeID) ==1){
+      if(!is_array($membershipTypeID)){
+        $singleMembershipTypeID = $membershipTypeID;
+      }
+      else{
+        $singleMembershipTypeID = $membershipTypeID[0];
+      }
+    }
+
+    $membershipDetails = self::buildMembershipTypeValues($form, $singleMembershipTypeID);
     $form->assign('membership_name', CRM_Utils_Array::value('name', $membershipDetails));
-
     $minimumFee = CRM_Utils_Array::value('minimum_fee', $membershipDetails);
 
     $contributionTypeId = NULL;
