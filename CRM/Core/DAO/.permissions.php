@@ -52,7 +52,7 @@ function _civicrm_api3_permissions($entity, $action, &$params)
         'contact' => array(
             'create' => array('access CiviCRM', 'add contacts'),
             'delete' => array('access CiviCRM', 'delete contacts'),
-            'get'    => array('access CiviCRM', 'view all contacts'),
+            'get'    => array(),
             'update' => array('access CiviCRM', 'edit all contacts'),
         ),
         'contribution' => array(

@@ -196,6 +196,36 @@ function civicrm_api3_contact_get($params) {
  */
 function _civicrm_api3_contact_get_spec(&$params) {
   $params['contact_is_deleted']['api.default'] = 0;
+
+  //we declare all these pseudofields as there are other undocumented fields accessible
+  // via the api - but if check permissions is set we only allow declared fields
+  $params['address_id']['title'] = 'Primary Address ID';
+  $params['street_address']['title'] = 'Primary Address Street Address';
+  $params['supplemental_address_1']['title'] = 'Primary Address Supplemental Address 1';
+  $params['supplemental_address_2']['title'] = 'Primary Address Supplemental Address 2';
+  $params['city']['title'] = 'Primary Address City';
+  $params['postal_code_suffix']['title'] = 'Primary Address Post Code Suffix';
+  $params['postal_code']['title'] = 'Primary Address Post Code';
+  $params['geo_code_1']['title'] = 'Primary Address Latitude';
+  $params['geo_code_2']['title'] = 'Primary Address Longitude';
+  $params['state_province_id']['title'] = 'Primary Address State Province ID';
+  $params['state_province_name']['title'] = 'Primary Address State Province Name';
+  $params['state_province']['title'] = 'Primary Address State Province';
+  $params['country_id']['title'] = 'Primary Address State Province ID';
+  $params['country']['title'] = 'Primary Address country';
+  $params['worldregion_id']['title'] = 'Primary Address World Region ID';
+  $params['worldregion']['title'] = 'Primary Address World Region';
+  $params['phone_id']['title'] = 'Primary Phone ID';
+  $params['phone_type_id']['title'] = 'Primary Phone Type ID';
+  $params['provider_id']['title'] = 'Primary Phone Provider ID';
+  $params['email_id']['title'] = 'Primary Email ID';
+  $params['email']['title'] = 'Primary Email';
+  $params['on_hold']['title'] = 'Primary Email On Hold';
+  $params['im']['title'] = 'Primary Instant Messanger';
+  $params['im_id']['title'] = 'Primary Instant Messanger ID';
+  $params['group_id']['title'] = 'Group Memberships (filter)';
+  $params['group']['title'] = 'Group Memberships (filter, array)';
+  $params['tag']['title'] = 'Assigned tags (filter, array)';
 }
 
 /*

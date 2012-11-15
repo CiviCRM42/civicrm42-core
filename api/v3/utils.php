@@ -360,11 +360,11 @@ function _civicrm_api3_store_values(&$fields, &$params, &$values) {
  * @param array $options array of options (so we can modify the filter)
  * @param bool $getCount are we just after the count
  */
-function _civicrm_api3_get_using_query_object($object_type, $params, $additional_options = array(), $getCount = null){
+function _civicrm_api3_get_using_query_object($entity, $params, $additional_options = array(), $getCount = null){
 
   // Convert id to e.g. contact_id
-  if (empty($params[$object_type . '_id']) && isset($params['id'])) {
-    $params[$object_type . '_id'] = $params['id'];
+  if (empty($params[$entity . '_id']) && isset($params['id'])) {
+    $params[$entity . '_id'] = $params['id'];
   }
   unset($params['id']);
 
@@ -381,7 +381,23 @@ function _civicrm_api3_get_using_query_object($object_type, $params, $additional
   if(empty($returnProperties)){
     $returnProperties = null;
   }
-
+  if(!empty($params['check_permissions'])){
+    // we will filter query object against getfields
+    $fields = civicrm_api($entity, 'getfields', array('version' => 3, 'action' => 'get'));
+    // we need to add this in as earlier in this function 'id' was unset in favour of $entity_id
+    $fields['values'][$entity . '_id'] = array();
+    $varsToFilter = array('returnProperties', 'inputParams');
+    foreach ($varsToFilter as $varToFilter){
+      if(!is_array($$varToFilter)){
+        continue;
+      }
+      //I was going to throw an exception rather than silently filter out - but
+      //would need to diff out of exceptions arr other keys like 'options', 'return', 'api. etcetc
+      //so we are silently ignoring parts of their request
+      //$exceptionsArr = array_diff(array_keys($$varToFilter), array_keys($fields['values']));
+      $$varToFilter = array_intersect_key($$varToFilter, $fields['values']);
+    }
+  }
   $options = array_merge($options,$additional_options);
   $sort             = CRM_Utils_Array::value('sort', $options, NULL);
   $offset             = CRM_Utils_Array::value('offset', $options, NULL);
@@ -394,6 +410,7 @@ function _civicrm_api3_get_using_query_object($object_type, $params, $additional
   }
 
   $newParams = CRM_Contact_BAO_Query::convertFormValues($inputParams);
+  $skipPermissions = CRM_Utils_Array::value('check_permissions', $params)? 0 :1;
   list($entities, $options) = CRM_Contact_BAO_Query::apiQuery(
     $newParams,
     $returnProperties,
@@ -402,15 +419,15 @@ function _civicrm_api3_get_using_query_object($object_type, $params, $additional
     $offset ,
     $limit,
     $smartGroupCache,
-    $getCount
+    $getCount,
+    $skipPermissions
   );
   if ($getCount) { // only return the count of contacts
-    return $entities[0];
+    return $entities;
   }
 
   return $entities;
-}
-/*
+}/*
  * Function transfers the filters being passed into the DAO onto the params object
  */
 function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
