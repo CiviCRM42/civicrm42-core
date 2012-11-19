@@ -119,7 +119,7 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue {
       $params['option_group_id'], 'name', 'id'
     );
     if (in_array($groupName, CRM_Core_OptionGroup::$_domainIDGroups)) {
-      $optionValue->domain_id = CRM_Core_Config::domainID();
+      $optionValue->domain_id = CRM_Utils_Array::value('domain_id', $params, CRM_Core_Config::domainID());
     }
 
     $optionValue->id = CRM_Utils_Array::value('optionValue', $ids);
