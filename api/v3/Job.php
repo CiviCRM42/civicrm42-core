@@ -489,3 +489,17 @@ function civicrm_api3_job_cleanup( $params ) {
     CRM_Utils_System::flushCache( );
   }
 }
+
+/**
+ * Set expired relationships to disabled.
+ *
+ */
+function civicrm_api3_job_disable_expired_relationships($params) {
+  $result = CRM_Contact_BAO_Relationship::disableExpiredRelationships();
+  if ($result) {
+    return civicrm_api3_create_success();
+  }
+  else {
+    return civicrm_api3_create_error('Failed to disable all expired relationships.');
+  }
+}
