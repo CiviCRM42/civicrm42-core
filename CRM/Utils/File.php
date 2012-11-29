@@ -514,5 +514,87 @@ HTACCESS;
     mkdir($fileName, 0700);
     return $fileName . '/';
   }
+
+  /**
+   * Search directory tree for files which match a glob pattern
+   *
+   * @param $dir string, base dir
+   * @param $pattern string, glob pattern, eg "*.txt"
+   * @return array(string)
+   */
+  static function findFiles($dir, $pattern) {
+    $todos = array($dir);
+    $result = array();
+    while (!empty($todos)) {
+      $subdir = array_shift($todos);
+      foreach (glob("$subdir/$pattern") as $match) {
+        if (!is_dir($match)) {
+          $result[] = $match;
+        }
+      }
+      $dh = opendir($subdir);
+      if ($dh) {
+        while (FALSE !== ($entry = readdir($dh))) {
+          $path = $subdir . DIRECTORY_SEPARATOR . $entry;
+          if ($entry == '.' || $entry == '..' || $entry == '.svn') {
+          } elseif (is_dir($path)) {
+            $todos[] = $path;
+          }
+        }
+        closedir($dh);
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Determine if $child is a sub-directory of $parent
+   *
+   * @param string $parent
+   * @param string $child
+   * @return bool
+   */
+  static function isChildPath($parent, $child, $checkRealPath = TRUE) {
+    if ($checkRealPath) {
+      $parent = realpath($parent);
+      $child = realpath($child);
+    }
+    $parentParts = explode('/', rtrim($parent, '/'));
+    $childParts = explode('/', rtrim($child, '/'));
+    while (($parentPart = array_shift($parentParts)) !== NULL) {
+      $childPart = array_shift($childParts);
+      if ($parentPart != $childPart) {
+        return FALSE;
+      }
+    }
+    if (empty($childParts)) {
+      return FALSE; // same directory
+    } else {
+      return TRUE;
+    }
+  }
+
+  /**
+   * Move $fromDir to $toDir, replacing/deleting any
+   * pre-existing content.
+   *
+   * @param string $fromDir the directory which should be moved
+   * @param string $toDir the new location of the directory
+   * @return bool TRUE on success
+   */
+  static function replaceDir($fromDir, $toDir, $verbose = FALSE) {
+    if (is_dir($toDir)) {
+      if (!self::cleanDir($toDir, TRUE, $verbose)) {
+        return FALSE;
+      }
+    }
+    // When CRM_Core_Extensions_Extension does this, it uses copyDir, and
+    // that seems odd. We'll just a rename().
+    // CRM_Utils_File::copyDir($fromDir, $toDir);
+    // if (!CRM_Utils_File::cleanDir($fromDir, TRUE, FALSE)) {
+    //   CRM_Core_Session::setStatus(ts('Failed to clean temp dir: %1', array(1 => $fromDir)), '', 'alert');
+    // }
+    return rename($fromDir, $toDir);
+  }
 }
 

@@ -49,7 +49,7 @@
       var getEntityID = function (field,result) {
         var domid= $(field).closest('.crm-entity');
         if (!domid) {
-          $().crmNotification ("Couldn't get the entity id. You need to set class='crm-entity' on a parent element of the field",'notification',domid);
+          console && console.log && console.log("Couldn't get the entity id. You need to set class='crm-entity' on a parent element of the field");
           return false;
         }
         // trying to extract using the html5 data
@@ -143,7 +143,7 @@
           return;
         }
 
-        if (this.nodeName = 'A') {
+        if (this.nodeName == 'A') {
           if (this.className.indexOf('crmf-') == -1) { // it isn't a jeditable field
             var formSettings= $.extend({}, editableSettings.form ,
               {source: $i.attr('href')
@@ -212,7 +212,13 @@
         if ($i.data('options')){
           settings.data = $i.data('options');
         }
-        $i.addClass ('crm-editable-enabled');
+        if(settings.type == 'textarea'){
+          $i.addClass ('crm-editable-textarea-enabled');
+        }
+        else{
+          $i.addClass ('crm-editable-enabled');
+        }
+
         $i.editable(function(value,settings) {
         //$i.editable(function(value,editableSettings) {
           parent=$i.closest('.crm-entity');
@@ -238,7 +244,11 @@
           }
 
           if ($i.data('action')) {
-            params[params['field']]=value;//format for create at least
+            var fieldName = params['field'];
+            delete params['field'];
+            delete params['value'];
+
+            params[fieldName]=value;//format for create at least
             action=$i.data('action');
           } else {
             action="setvalue";

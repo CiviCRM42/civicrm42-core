@@ -66,6 +66,7 @@ class CRM_Core_BAO_Domain extends CRM_Core_DAO_Domain {
     return CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_Domain', $params, $defaults);
   }
 
+
   /**
    * Get the domain BAO
    *
@@ -73,10 +74,9 @@ class CRM_Core_BAO_Domain extends CRM_Core_DAO_Domain {
    * @access public
    * @static
    */
-  static
-  function &getDomain() {
+  static function &getDomain($reset = null) {
     static $domain = NULL;
-    if (!$domain) {
+    if (!$domain || $reset) {
       $domain = new CRM_Core_BAO_Domain();
       $domain->id = CRM_Core_Config::domainID();
       if (!$domain->find(TRUE)) {
@@ -84,6 +84,39 @@ class CRM_Core_BAO_Domain extends CRM_Core_DAO_Domain {
       }
     }
     return $domain;
+  }
+
+ /**
+  * Change active domain (ie. to perform a temporary action) such as changing
+  * config for all domains
+  *
+  * Switching around the global domain variable is very risky business. This
+  * is ONLY used as a hack to allow CRM_Core_BAO_Setting::setItems to manipulate
+  * the civicrm_domain.config_backend in multiple domains. When/if config_backend
+  * goes away, this hack should be removed.
+  *
+  * @param integer $domainID id for domain you want to set as current
+  * @deprecated
+  * @see http://issues.civicrm.org/jira/browse/CRM-11204
+  */
+  static function setDomain($domainID){
+    CRM_Core_Config::domainID($domainID);
+    self::getDomain($domainID);
+    CRM_Core_Config::singleton(TRUE, TRUE);
+  }
+
+  /**
+   * Reset domain to default (ie. as loaded from settings). This is the
+   * counterpart to CRM_Core_BAO_Domain::setDomain.
+   *
+   * @param integer $domainID id for domain you want to set as current
+   * @deprecated
+   * @see CRM_Core_BAO_Domain::setDomain
+   */
+  static function resetDomain(){
+    CRM_Core_Config::domainID(null, true);
+    self::getDomain(null, true);
+    CRM_Core_Config::singleton(TRUE, TRUE);
   }
 
   static
@@ -265,7 +298,7 @@ class CRM_Core_BAO_Domain extends CRM_Core_DAO_Domain {
       $query = "
 SELECT      cc.id
 FROM        civicrm_contact cc
-INNER JOIN  civicrm_group_contact gc ON 
+INNER JOIN  civicrm_group_contact gc ON
            (gc.contact_id = cc.id AND gc.status = 'Added' AND gc.group_id IN (" . implode(',', $siteGroups) . "))";
 
       $dao = CRM_Core_DAO::executeQuery($query);
