@@ -505,6 +505,10 @@ WHERE      a.id = %1
             $typeValue['fieldID'],
             $options
           );
+          if (CRM_Utils_Array::value('type', $typeValue) == 'Date') {
+            $value = $dao->$columnName;
+          }
+          
           if ($value) {
             // Note: this is already taken care in getDisplayValue above, but sometimes
             // strings like '^A^A' creates problem. So to fix this special case -
