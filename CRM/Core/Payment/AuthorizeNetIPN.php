@@ -239,14 +239,22 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
     $ids['contribution'] = self::retrieve('x_invoice_num', 'Integer');
 
     // joining with contribution table for extra checks
-    $sql = "
-    SELECT cr.id
+      $sql = "
+    SELECT cr.id, cr.contact_id
       FROM civicrm_contribution_recur cr
 INNER JOIN civicrm_contribution co ON co.contribution_recur_id = cr.id
      WHERE cr.processor_id = '{$input['subscription_id']}' AND
            (cr.contact_id = {$ids['contact']} OR co.id = {$ids['contribution']})
      LIMIT 1";
-    $ids['contributionRecur'] = CRM_Core_DAO::singleValueQuery($sql);
+    $contRecur = CRM_Core_DAO::executeQuery($sql);
+    $contRecur->fetch();
+    $ids['contributionRecur'] = $contRecur->id;
+    if($ids['contact'] != $contRecur->contact_id){
+      CRM_Core_Error::debug_log_message("Recurring contribution appears to have been re-assigned from id {$ids['contact']} to {$contRecur->contact_id}
+        Continuing with {$contRecur->contact_id}
+      ");
+      $ids['contact'] = $contRecur->contact_id;
+    }
     if (!$ids['contributionRecur']) {
       CRM_Core_Error::debug_log_message("Could not find contributionRecur id");
       echo "Failure: Missing Parameter<p>";
@@ -287,7 +295,7 @@ INNER JOIN civicrm_membership_payment mp ON m.id = mp.membership_id AND mp.contr
       FALSE, $default, $location
     );
     if ($abort && $value === NULL) {
-      CRM_Core_Error::debug_log_message("Could not find an entry for $name in $location");
+      CRM_Core_Error::debug_log_message("Could not find an entry for $name in $location" . print_r($location,1) . print_r(debug_backtrace(), 1));
       echo "Failure: Missing Parameter<p>";
       exit();
     }
