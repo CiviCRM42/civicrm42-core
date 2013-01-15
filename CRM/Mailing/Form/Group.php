@@ -114,8 +114,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       $defaults['includeGroups'] = $mailingGroups['civicrm_group']['Include'];
       $defaults['excludeGroups'] = CRM_Utils_Array::value('Exclude', $mailingGroups['civicrm_group']);
 
-      $defaults['includeMailings'] = CRM_Utils_Array::value('Include', $mailingGroups['civicrm_mailing']);
-      $defaults['excludeMailings'] = $mailingGroups['civicrm_mailing']['Exclude'];
+      if (!empty($mailingGroups['civicrm_mailing'])) {
+        $defaults['includeMailings'] = CRM_Utils_Array::value('Include', $mailingGroups['civicrm_mailing']);
+        $defaults['excludeMailings'] = CRM_Utils_Array::value('Exclude', $mailingGroups['civicrm_mailing']);
+      }
     }
 
     //when the context is search hide the mailing recipients.
