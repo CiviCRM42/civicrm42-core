@@ -73,7 +73,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   static
   function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
-    if (self::$_singleton[$processorName] === NULL) {
+    if (!isset(self::$_singleton[$processorName]) || self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_AuthorizeNet($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
@@ -327,7 +327,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
   function _getAuthorizeNetFields() {
     $amount = $this->_getParam('total_amount');//Total amount is from the form contribution field
-    if(empty($amount)){//CRM-9894 would this ever be the case?? 
+    if(empty($amount)){//CRM-9894 would this ever be the case??
       $amount = $this->_getParam('amount');
     }
     $fields = array();
