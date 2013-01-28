@@ -66,10 +66,15 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_Base {
             $form_state['input']['pass'] = array('pass1'=>$params['cms_pass'],'pass2'=>$params['cms_pass']);
     }
 
+    if(!empty($params['notify'])){
+      $form_state['input']['notify'] = $params['notify'];
+    }
+
     $form_state['rebuild'] = FALSE;
     $form_state['programmed'] = TRUE;
     $form_state['method'] = 'post';
     $form_state['build_info']['args'] = array();
+
 
     $config = CRM_Core_Config::singleton();
 
@@ -79,7 +84,7 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_Base {
     $form = drupal_retrieve_form('user_register_form', $form_state);
     $form_state['process_input'] = 1;
     $form_state['submitted'] = 1;
-
+    $form['#tree'] = FALSE;
     drupal_process_form('user_register_form', $form, $form_state);
 
     $config->inCiviCRM = FALSE;
