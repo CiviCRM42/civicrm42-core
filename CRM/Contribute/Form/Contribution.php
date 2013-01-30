@@ -494,30 +494,34 @@ WHERE  contribution_id = {$this->_id}
     }
 
     if ($this->_mode) {
-      $billingFields = array();
-      foreach ($this->_fields as $name => $dontCare) {
-        if (strpos($name, 'billing_') === 0) {
-          $name = $idName = substr($name, 8);
-          if (in_array($name, array(
-            "state_province_id-$this->_bltID", "country_id-$this->_bltID"))) {
-            $name = str_replace('_id', '', $name);
-          }
-          $billingFields[$name] = 'billing_' . $idName;
-        }
+      $config = CRM_Core_Config::singleton();
+      // set default country from config if no country set
+      if (!CRM_Utils_Array::value("billing_country_id-{$this->_bltID}", $defaults)) {
+        $defaults["billing_country_id-{$this->_bltID}"] = $config->defaultContactCountry;
+      }
+
+      if (!CRM_Utils_Array::value("billing_state_province_id-{$this->_bltID}", $defaults)) {
+        $defaults["billing_state_province_id-{$this->_bltID}"] = $config->defaultContactStateProvince;
+      }
+
+      $names = array(
+        'first_name', 'middle_name', 'last_name', "street_address-{$this->_bltID}", "city-{$this->_bltID}",
+        "postal_code-{$this->_bltID}", "country_id-{$this->_bltID}", "state_province_id-{$this->_bltID}",
+        "state_province-{$this->_bltID}", "country-{$this->_bltID}"
+        );
+
+      foreach ($names as $name) {
         $fields[$name] = 1;
       }
 
       if ($this->_contactID) {
         CRM_Core_BAO_UFGroup::setProfileDefaults($this->_contactID, $fields, $defaults);
       }
-      foreach ($billingFields as $name => $billingName) {
-        $defaults[$billingName] = CRM_Utils_Array::value($name, $defaults);
-      }
 
-      $config = CRM_Core_Config::singleton();
-      // set default country from config if no country set
-      if (!CRM_Utils_Array::value("billing_country_id-{$this->_bltID}", $defaults)) {
-        $defaults["billing_country_id-{$this->_bltID}"] = $config->defaultContactCountry;
+      foreach ($names as $name) {
+        if (!empty($defaults[$name])) {
+          $defaults['billing_' . $name] = $defaults[$name];
+        }
       }
 
 
@@ -1143,7 +1147,7 @@ WHERE  contribution_id = {$this->_id}
         CRM_Price_BAO_LineItem::deleteLineItems($this->_id, 'civicrm_contribution');
       }
     }
-    
+
     // process price set and get total amount and line items.
     $lineItem = array();
     $priceSetId = $pId = NULL;
@@ -1153,7 +1157,7 @@ WHERE  contribution_id = {$this->_id}
       $this->_priceSet = current(CRM_Price_BAO_Set::getSetDetail($priceSetId));
       $fieldID = key($this->_priceSet['fields']);
       $fieldValueId = key($this->_priceSet['fields'][$fieldID]['options']);
-      $this->_priceSet['fields'][$fieldID]['options'][$fieldValueId]['amount'] = $submittedValues['total_amount']; 
+      $this->_priceSet['fields'][$fieldID]['options'][$fieldValueId]['amount'] = $submittedValues['total_amount'];
       $submittedValues['price_'.$fieldID] = 1;
     }
 
