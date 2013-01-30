@@ -414,7 +414,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
     $relationship = new CRM_Contact_DAO_Relationship();
     $relationship->id = $id;
     $relationship->find(TRUE);
-    
+
     //to delete relationship between household and individual                                                                                          \
     //or between individual and orgnization
     if (($action & CRM_Core_Action::DISABLE) || ($action & CRM_Core_Action::DELETE)) {
@@ -422,7 +422,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
         $sharedContact = new CRM_Contact_DAO_Contact();
         $sharedContact->id = $relationship->contact_id_a;
         $sharedContact->find(TRUE);
-        
+
         if ($relationship->relationship_type_id == 4 && $relationship->contact_id_b == $sharedContact->employer_id) {
           CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer($relationship->contact_id_a);
         }
@@ -645,21 +645,43 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
    * @static
    */
   static function checkDuplicateRelationship(&$params, $id, $contactId = 0, $relationshipId = 0) {
-    $start_date = CRM_Utils_Date::format(CRM_Utils_Array::value('start_date', $params));
-    $end_date = CRM_Utils_Date::format(CRM_Utils_Array::value('end_date', $params));
-
     $relationshipTypeId = CRM_Utils_Array::value('relationship_type_id', $params);
     list($type, $first, $second) = explode('_', $relationshipTypeId);
 
     $queryString = " SELECT id
                          FROM   civicrm_relationship
                          WHERE  relationship_type_id = " . CRM_Utils_Type::escape($type, 'Integer');
-    if ($start_date) {
-      $queryString .= " AND start_date = " . CRM_Utils_Type::escape($start_date, 'Date');
+
+    /*
+    * CRM-11792 - date fields from API are in ISO format, but this function supports date arrays
+    * BAO has increasingly standardised to ISO format so I believe this function should support
+    * ISO rather than make API format it - however, need to support array format for now to avoid breakage
+    * @ time of writing this function is called from Relationship::create (twice)
+    * CRM_BAO_Contact_Utils::clearCurrentEmployer (seemingly without dates)
+    * CRM_Contact_Form_Task_AddToOrganization::postProcess &
+    * CRM_Contact_Form_Task_AddToHousehold::postProcess
+    * (I don't think the last 2 support dates but not sure
+    */
+
+    $dateFields = array('end_date', 'start_date');
+    foreach ($dateFields as $dateField){
+      if(empty($params[$dateField])){
+        if(array_key_exists($dateField, $params)){
+          //this is most likely coming from an api call & probably loaded from the DB to deal with some of the
+          //other myriad of excessive checks still in place both in the api & the create functions
+          $queryString .= " AND $dateField IS NULL";
+        }
+        continue;
+      }
+      elseif (is_array($params[$dateField])){
+        $queryString .= " AND $dateField = " . CRM_Utils_Type::escape(CRM_Utils_Date::format($params[$dateField]), 'Date');
+      }
+      else{
+        // we are going to process the date again in case it has been loaded from DB in which case it may be Y-m-d not Y-m-h
+        $queryString .= " AND $dateField = " . CRM_Utils_Type::escape(CRM_Utils_Date::processDate($params[$dateField]), 'Date');
+      }
     }
-    if ($end_date) {
-      $queryString .= " AND end_date = " . CRM_Utils_Type::escape($end_date, 'Date');
-    }
+
     $queryString .= " AND ( ( contact_id_a = " . CRM_Utils_Type::escape($id, 'Integer') . " AND contact_id_b = " . CRM_Utils_Type::escape($contactId, 'Integer') . " ) OR ( contact_id_a = " . CRM_Utils_Type::escape($contactId, 'Integer') . " AND contact_id_b = " . CRM_Utils_Type::escape($id, 'Integer') . " ) ) ";
 
     //if caseId is provided, include it duplicate checking.
@@ -1416,7 +1438,7 @@ cc.sort_name LIKE '%$name%'";
    */
   static function disableExpiredRelationships() {
     $query = "SELECT id FROM civicrm_relationship WHERE is_active = 1 AND end_date < CURDATE()";
-    
+
     $dao = CRM_Core_DAO::executeQuery($query);
     while ($dao->fetch()) {
       $result = CRM_Contact_BAO_Relationship::setIsActive($dao->id, FALSE);
