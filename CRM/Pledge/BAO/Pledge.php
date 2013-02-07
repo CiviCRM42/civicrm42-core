@@ -1054,5 +1054,42 @@ SELECT  pledge.contact_id              as contact_id,
 
     return array('is_error' => 0, 'messages' => implode("\n\r", $returnMessages));
   }
+
+  /**
+   * Mark a pledge (and any outstanding payments) as cancelled.
+   *
+   * @param int $pledgeID
+   */
+  public static function cancel($pledgeID) {
+    $statuses = array_flip(CRM_Contribute_PseudoConstant::contributionStatus());
+    $paymentIDs = self::findCancelablePayments($pledgeID);
+    CRM_Pledge_BAO_PledgePayment::updatePledgePaymentStatus($pledgeID, $paymentIDs, NULL,
+      $statuses['Cancelled'], 0, FALSE, TRUE
+    );
+  }
+
+  /**
+   * Find payments which can be safely canceled.
+   *
+   * @param int $pledgeID
+   * @return array of int (civicrm_pledge_payment.id)
+   */
+  public static function findCancelablePayments($pledgeID) {
+    $statuses = array_flip(CRM_Contribute_PseudoConstant::contributionStatus());
+
+    $paymentDAO = new CRM_Pledge_DAO_PledgePayment();
+    $paymentDAO->pledge_id = $pledgeID;
+    $paymentDAO->whereAdd(sprintf("status_id IN (%d,%d)",
+      $statuses['Overdue'],
+      $statuses['Pending']
+    ));
+    $paymentDAO->find();
+
+    $paymentIDs = array();
+    while ($paymentDAO->fetch()) {
+      $paymentIDs[] = $paymentDAO->id;
+    }
+    return $paymentIDs;
+  }
 }
 
