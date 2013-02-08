@@ -179,7 +179,7 @@ class CRM_Pledge_BAO_Pledge extends CRM_Pledge_DAO_Pledge {
         }
       }
       else {
-        if ($params['id']) {
+        if (!empty($params['id'])) {
           $params['status_id'] = CRM_Pledge_BAO_PledgePayment::calculatePledgeStatus($params['id']);
         }
         else {
@@ -414,7 +414,7 @@ GROUP BY  currency
     $query = "
 SELECT $select, cp.currency
 FROM $from
-WHERE  $whereCond 
+WHERE  $whereCond
 GROUP BY  cp.currency
 ";
     if ($select) {
@@ -793,7 +793,7 @@ GROUP BY  cp.currency
     $query = "
 SELECT civicrm_pledge.id id
 FROM civicrm_pledge
-WHERE civicrm_pledge.status_id  {$statusClause}        
+WHERE civicrm_pledge.status_id  {$statusClause}
   AND civicrm_pledge.contact_id = %1
 ";
 
@@ -860,12 +860,12 @@ SELECT  pledge.contact_id              as contact_id,
         pledge.is_test                 as is_test,
         pledge.campaign_id             as campaign_id,
         SUM(payment.scheduled_amount)  as amount_due,
-        ( SELECT sum(civicrm_pledge_payment.actual_amount) 
-        FROM civicrm_pledge_payment 
+        ( SELECT sum(civicrm_pledge_payment.actual_amount)
+        FROM civicrm_pledge_payment
         WHERE civicrm_pledge_payment.status_id = 1
         AND  civicrm_pledge_payment.pledge_id = pledge.id
         ) as amount_paid
-        FROM      civicrm_pledge pledge, civicrm_pledge_payment payment 
+        FROM      civicrm_pledge pledge, civicrm_pledge_payment payment
         WHERE     pledge.id = payment.pledge_id
         AND     payment.status_id IN ( {$statusIds} ) AND pledge.status_id IN ( {$statusIds} )
         GROUP By  payment.id
