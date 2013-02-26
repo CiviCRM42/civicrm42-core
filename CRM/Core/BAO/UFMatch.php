@@ -38,6 +38,23 @@
  */
 class CRM_Core_BAO_UFMatch extends CRM_Core_DAO_UFMatch {
 
+  /*
+   * Create UF Match, Note that thsi function is here in it's simplest form @ the moment
+   *
+   *
+   * @param array $params input parameters
+   */
+  static function create($params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'UFMatch', CRM_Utils_Array::value('id', $params), $params);
+    $dao = new CRM_Core_DAO_UFMatch();
+    $dao->copyValues($params);
+    $dao->save();
+    CRM_Utils_Hook::post($hook, 'UFMatch', $dao->id, $dao);
+    return $dao;
+  }
+
+
   /**
    * Given a UF user object, make sure there is a contact
    * object for this user. If the user has new values, we need
@@ -340,7 +357,7 @@ AND    domain_id    = %4
       $conflict = CRM_Core_DAO::singleValueQuery($sql, $params);
 
       if (!$conflict) {
-        $ufmatch->save();
+        $ufmatch = CRM_Core_BAO_UFMatch::create((array) $ufmatch);
         $ufmatch->free();
         $newContact = TRUE;
 
@@ -446,7 +463,7 @@ AND    domain_id    = %4
     if ($ufmatch->find(TRUE)) {
       // Save the email in UF Match table
       $ufmatch->uf_name = $emailAddress;
-      $ufmatch->save();
+      $ufmatch = CRM_Core_BAO_UFMatch::create((array) $ufmatch);
 
       //check if the primary email for the contact exists
       //$contactDetails[1] - email
