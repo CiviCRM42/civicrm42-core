@@ -1148,4 +1148,21 @@ abstract class CRM_Utils_Hook {
         'civicrm_alterSettingsMetaData'
     );
   }
+
+  /**
+   * This hook is called to alter the civicrm permissions available
+   * to be provided to the CMS
+   *
+   * @param array $permissions
+   *
+   * @return null the return value is ignored
+   * @access public
+   */
+  static function permissions(&$permissions) {
+    return self::singleton()->invoke(1,
+      $permissions, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      'civicrm_permissions'
+    );
+  }
+
 }

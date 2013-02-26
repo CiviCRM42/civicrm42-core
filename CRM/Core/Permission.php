@@ -457,7 +457,7 @@ class CRM_Core_Permission {
       'access AJAX API' => $prefix . ts('access AJAX API'),
       'access contact reference fields' => $prefix . ts('access contact reference fields'),
     );
-
+    CRM_Utils_Hook::permissions($permissions);
     return $permissions;
   }
 
