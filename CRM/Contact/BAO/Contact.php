@@ -1860,9 +1860,7 @@ ORDER BY civicrm_email.is_primary DESC";
             $data[$blockName][$loc]['is_primary'] = 1;
           }
         }
-        elseif (($locTypeId == $defaultLocationId || $locTypeId == $billingLocationTypeId) &&
-          ($loc == 1 || !CRM_Utils_Array::retrieveValueRecursive($data['location'][$loc - 1], 'is_primary'))
-        ) {
+        elseif ($locTypeId == $defaultLocationId) {
           $data[$blockName][$loc]['is_primary'] = 1;
         }
 

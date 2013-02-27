@@ -445,7 +445,6 @@ class CRM_Core_BAO_Block {
     elseif (CRM_Utils_Array::value('contact_id', $params)) {
       $contactId = $params['contact_id'];
     }
-
     if ( !$contactId ) {
       // entity not associated with contact so concept of is_primary not relevant
       return;
@@ -493,6 +492,30 @@ class CRM_Core_BAO_Block {
       $existingEntities->is_primary = 1;
       $existingEntities->save();
     }
+  }
+
+  /**
+   * Sort location array so primary element is first
+   * @param Array $location
+   */
+  static function sortPrimaryFirst(&$locations){
+    uasort($locations, 'self::primaryComparison');
+  }
+
+/**
+ * compare 2 locations to see which should go first based on is_primary
+ * (sort function for sortPrimaryFirst)
+ * @param array $location1
+ * @param array_type $location2
+ * @return number
+ */
+  static function primaryComparison($location1, $location2){
+    $l1 = CRM_Utils_Array::value('is_primary', $location1);
+    $l2 = CRM_Utils_Array::value('is_primary', $location2);
+    if ($l1 == $l2) {
+      return 0;
+    }
+    return ($l1 < $l2) ? -1 : 1;
   }
 }
 
