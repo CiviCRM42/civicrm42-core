@@ -665,24 +665,27 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
 
     $dateFields = array('end_date', 'start_date');
     foreach ($dateFields as $dateField){
-      if(empty($params[$dateField])){
-        if(array_key_exists($dateField, $params)){
+      if(array_key_exists($dateField, $params)) {
+        if (empty($params[$dateField]) || $params[$dateField] == 'null'){
           //this is most likely coming from an api call & probably loaded from the DB to deal with some of the
           //other myriad of excessive checks still in place both in the api & the create functions
           $queryString .= " AND $dateField IS NULL";
+          continue;
         }
-        continue;
-      }
-      elseif (is_array($params[$dateField])){
-        $queryString .= " AND $dateField = " . CRM_Utils_Type::escape(CRM_Utils_Date::format($params[$dateField]), 'Date');
-      }
-      else{
-        // we are going to process the date again in case it has been loaded from DB in which case it may be Y-m-d not Y-m-h
-        $queryString .= " AND $dateField = " . CRM_Utils_Type::escape(CRM_Utils_Date::processDate($params[$dateField]), 'Date');
+        elseif (is_array($params[$dateField])){
+          $queryString .= " AND $dateField = " . CRM_Utils_Type::escape(CRM_Utils_Date::format($params[$dateField]), 'Date');
+        }
+        else{
+          $queryString .= " AND $dateField = " . CRM_Utils_Type::escape($params[$dateField], 'Date');
+        }
       }
     }
 
-    $queryString .= " AND ( ( contact_id_a = " . CRM_Utils_Type::escape($id, 'Integer') . " AND contact_id_b = " . CRM_Utils_Type::escape($contactId, 'Integer') . " ) OR ( contact_id_a = " . CRM_Utils_Type::escape($contactId, 'Integer') . " AND contact_id_b = " . CRM_Utils_Type::escape($id, 'Integer') . " ) ) ";
+    $queryString .=
+      " AND ( ( contact_id_a = " . CRM_Utils_Type::escape($id, 'Integer') .
+      " AND contact_id_b = " . CRM_Utils_Type::escape($contactId, 'Integer') .
+      " ) OR ( contact_id_a = " . CRM_Utils_Type::escape($contactId, 'Integer') .
+      " AND contact_id_b = " . CRM_Utils_Type::escape($id, 'Integer') . " ) ) ";
 
     //if caseId is provided, include it duplicate checking.
     if ($caseId = CRM_Utils_Array::value('case_id', $params)) {
