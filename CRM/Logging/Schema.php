@@ -184,12 +184,26 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     $dao->fetch();
     $create = explode("\n", $dao->Create_Table);
     foreach ($cols as $col) {
-      $line = substr(array_pop(preg_grep("/^  `$col` /", $create)), 0, -1);
+      $line = preg_grep("/^  `$col` /", $create);
+      $line = substr(array_pop($line), 0, -1);
+      // CRM-11179
+      $line = self::fixTimeStampAndNotNullSQL($line);
+
       CRM_Core_DAO::executeQuery("ALTER TABLE `{$this->db}`.log_$table ADD $line");
     }
 
-    // invoke the meta trigger creation call
-    CRM_Core_DAO::triggerRebuild($table);
+    if ($rebuildTrigger) {
+      // invoke the meta trigger creation call
+      CRM_Core_DAO::triggerRebuild($table);
+    }
+  }
+
+  function fixTimeStampAndNotNullSQL($query) {
+    $query = str_ireplace("TIMESTAMP NOT NULL", "TIMESTAMP NULL", $query);
+    $query = str_ireplace("DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", '', $query);
+    $query = str_ireplace("DEFAULT CURRENT_TIMESTAMP", '', $query);
+    $query = str_ireplace("NOT NULL", '', $query);
+    return $query;
   }
 
   /**
@@ -265,21 +279,27 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     $query = $dao->Create_Table;
 
     // rewrite the queries into CREATE TABLE queries for log tables:
-    // - prepend the name with log_
-    // - drop AUTO_INCREMENT columns
-    // - drop non-column rows of the query (keys, constraints, etc.)
-    // - set the ENGINE to ARCHIVE
-    // - add log-specific columns (at the end of the table)
     $cols = <<<COLS
             log_date    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             log_conn_id INTEGER,
             log_user_id INTEGER,
             log_action  ENUM('Initialization', 'Insert', 'Update', 'Delete')
 COLS;
+
+    // - prepend the name with log_
+    // - drop AUTO_INCREMENT columns
+    // - drop non-column rows of the query (keys, constraints, etc.)
+    // - set the ENGINE to ARCHIVE
+    // - add log-specific columns (at the end of the table)
     $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
     $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
     $query = preg_replace("/^  [^`].*$/m", '', $query);
     $query = preg_replace("/^\) ENGINE=[^ ]+ /im", ') ENGINE=ARCHIVE ', $query);
+
+    // log_civicrm_contact.modified_date for example would always be copied from civicrm_contact.modified_date,
+    // so there's no need for a default timestamp and therefore we remove such default timestamps
+    // also eliminate the NOT NULL constraint, since we always copy and schema can change down the road)
+    $query = self::fixTimeStampAndNotNullSQL($query);
     $query = preg_replace("/^\) /m", "$cols\n) ", $query);
 
     CRM_Core_DAO::executeQuery($query);
