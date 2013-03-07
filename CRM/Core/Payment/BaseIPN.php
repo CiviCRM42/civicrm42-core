@@ -719,7 +719,11 @@ LIMIT 1;";
       $paymentDetails['contribution_id'] = $contribution->id;
       $paymentDetails['status_id'] = $contribution->contribution_status_id;
       $paymentDetails['actual_amount'] = $contribution->total_amount;
-
+      if(empty($paymentDetails['id'])){
+        // we can assume this pledge is now completed
+        // return now so we don't create a core error & roll back
+        return;
+      }
       // put contribution against it
       $payment = CRM_Pledge_BAO_PledgePayment::add($paymentDetails);
       $paymentIDs[] = $payment->id;
