@@ -546,7 +546,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
       $comp = $comp . '.';
     }
 
-    $fileName = "{$config->configAndLogDir}CiviCRM." . $comp . md5($config->dsn . $config->userFrameworkResourceURL) . '.log';
+    $fileName = "{$config->configAndLogDir}CiviCRM." . $comp . md5($config->dsn) . '.log';
 
     // Roll log file monthly or if greater than 256M
     // note that PHP file functions have a limit of 2G and hence
