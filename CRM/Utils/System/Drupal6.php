@@ -120,11 +120,11 @@ class CRM_Utils_System_Drupal6 extends CRM_Utils_System_Base {
     }
 
     return $form_state['user']->uid;
-    
+
   }
   /*
      *  Change user name in host CMS
-     *  
+     *
      *  @param integer $ufID User ID in CMS
      *  @param string $ufName User name
      */
@@ -771,11 +771,11 @@ SELECT name, mail
       $perms = $perms + drupal_map_assoc($newPerms);
       $permList = implode(', ', $perms);
       db_query('UPDATE {permission} SET perm = "%s" WHERE rid = %d', $permList, $rid);
-      /*        
+      /*
         if ( ! empty( $roles ) ) {
             $rids = implode(',', array_keys($roles));
             db_query( 'UPDATE {permission} SET perm = CONCAT( perm, \', edit all events\') WHERE rid IN (' . implode(',', array_keys($roles)) . ')' );
-            db_query( "UPDATE {permission} SET perm = REPLACE( perm, '%s', '%s' ) WHERE rid IN ($rids)", 
+            db_query( "UPDATE {permission} SET perm = REPLACE( perm, '%s', '%s' ) WHERE rid IN ($rids)",
                 $oldPerm, implode(', ', $newPerms) );*/
     }
   }
@@ -792,6 +792,20 @@ SELECT name, mail
       $result[] = new CRM_Core_Module('drupal.' . $row->name, ($row->status == 1) ? TRUE : FALSE);
     }
     return $result;
+  }
+
+  /*
+   * Wrapper for og_membership creation
+  */
+  function og_membership_create($ogID, $drupalID){
+    og_save_subscription( $ogID, $drupalID, array( 'is_active' => 1 ) );
+  }
+
+  /**
+   * Wrapper for og_membership deletion
+   */
+  function og_membership_delete($ogID, $drupalID) {
+      og_delete_subscription( $ogID, $drupalID );
   }
 }
 

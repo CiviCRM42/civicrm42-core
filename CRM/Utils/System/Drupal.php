@@ -884,4 +884,37 @@ AND    u.status = 1
     }
     return $result;
   }
+
+  /**
+   * Wrapper for og_membership creation
+   */
+  function og_membership_create($ogID, $drupalID){
+    if (function_exists('og_entity_query_alter')) {
+      // sort-of-randomly chose a function that only exists in the 7.x-2.x branch
+      // TODO: Find a more solid way to make this test
+      // Also, since we don't know how to get the entity type of the group, we'll assume it's 'node'
+      og_group('node', $ogID, array('entity' => user_load($drupalID)));
+    }
+    else {
+      // Works for the OG 7.x-1.x branch
+      og_group($ogID, array('entity' => user_load($drupalID)));
+    }
+  }
+
+  /**
+   * Wrapper for og_membership deletion
+   */
+  function og_membership_delete($ogID, $drupalID) {
+    if (function_exists('og_entity_query_alter')) {
+      // sort-of-randomly chose a function that only exists in the 7.x-2.x branch
+      // TODO: Find a more solid way to make this test
+      // Also, since we don't know how to get the entity type of the group, we'll assume it's 'node'
+      og_ungroup('node', $ogID, 'user', user_load($drupalID));
+    } else {
+      // Works for the OG 7.x-1.x branch
+      og_ungroup($ogID, 'user', user_load($drupalID));
+    }
+  }
+
+
 }
