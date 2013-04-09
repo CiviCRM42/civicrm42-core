@@ -1057,8 +1057,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
     // add these values for the recurringContrib function ,CRM-10188
     $params['contribution_type_id'] = $contributionType->id;
-    $params['is_email_receipt'] = CRM_Utils_Array::value( 'is_email_receipt', $form->_values );
-
+    if(!isset($params['is_email_receipt'])){
+      $params['is_email_receipt'] = CRM_Utils_Array::value( 'is_email_receipt', $form->_values );
+    }
     $recurringContributionID = self::processRecurringContribution($form, $params, $contactID, $contributionType, $online);
 
     if (!$online && isset($params['honor_contact_id'])) {
