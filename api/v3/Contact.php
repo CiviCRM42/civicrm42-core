@@ -149,6 +149,10 @@ function civicrm_api3_contact_create($params) {
 function _civicrm_api3_contact_create_spec(&$params) {
   $params['contact_type']['api.required'] = 1;
   $params['id']['api.aliases'] = array('contact_id');
+  $params['dupe_check'] = array(
+    'title' => 'Check for Duplicates',
+    'description' => 'Throw error if contact create matches dedupe rule',
+  );
 }
 
 /**
@@ -343,10 +347,10 @@ function _civicrm_api3_contact_check_params( &$params, $dupeCheck = true, $dupeE
       $dedupeParams['check_permission'] = $params['check_permission'];
     }
 
-    $ids = implode(',', CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict', array()));
+    $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict', array());
 
-    if ($ids != NULL) {
-      throw new Exception("Found matching contacts: $ids");
+    if (count($ids) >0) {
+      throw new API_Exception("Found matching contacts: ". implode(',',$ids),"duplicate", array("ids"=>$ids));
     }
   }
 
