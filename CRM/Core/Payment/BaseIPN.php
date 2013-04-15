@@ -350,7 +350,7 @@ LIMIT 1;";
             $formatedParams['is_override'] = FALSE;
             $membership->copyValues($formatedParams);
             $membership->save();
-               
+
             //updating the membership log
             $membershipLog = array();
             $membershipLog = $formatedParams;
@@ -371,7 +371,7 @@ LIMIT 1;";
 
             //update related Memberships.
             CRM_Member_BAO_Membership::updateRelatedMemberships($membership->id, $formatedParams);
-            
+
             //update the membership type key of membership relatedObjects array
             //if it has changed after membership update
             if ($membershipTypeIdKey != $membership->membership_type_id) {
@@ -502,7 +502,7 @@ LIMIT 1;";
     else {
       CRM_Activity_BAO_Activity::addActivity($participant);
     }
-        
+
     CRM_Core_Error::debug_log_message("Contribution record updated successfully");
     $transaction->commit();
 
@@ -512,9 +512,10 @@ LIMIT 1;";
       $values['is_email_receipt'] == 1
     ) {
       self::sendMail($input, $ids, $objects, $values, $recur, FALSE);
+      CRM_Core_Error::debug_log_message("Receipt mail sent");
     }
 
-    CRM_Core_Error::debug_log_message("Success: Database updated and mail sent");
+    CRM_Core_Error::debug_log_message("Success: Database updated");
   }
 
   function getBillingID(&$ids) {
@@ -655,7 +656,7 @@ LIMIT 1;";
 
     //complete the contribution.
     $baseIPN->completeTransaction($input, $ids, $objects, $transaction, FALSE);
-    
+
     // reset template values before processing next transactions
     $template->clearTemplateVars();
 
