@@ -999,7 +999,7 @@ WHERE civicrm_event.is_active = 1
           if (!is_array($gIdValues)) {
             $gIdValues = array( $gIdValues );
           }
-          
+
           foreach ($gIdValues as $gId) {
             $email = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $gId, 'notify');
             if ($email) {
@@ -1346,6 +1346,7 @@ WHERE civicrm_event.is_active = 1
       $imProviders   = CRM_Core_PseudoConstant::IMProvider();
       //start of code to set the default values
       foreach ($fields as $name => $field) {
+        $dontfix = FALSE;
         $index = $field['title'];
         $customFieldName = NULL;
         if ($name === 'organization_name') {
@@ -1508,10 +1509,8 @@ WHERE  id = $cfID
                   $customVal = (float )($params[$name]);
                 }
                 elseif ($dao->data_type == 'Date') {
-                  $date = CRM_Utils_Date::format($params[$name], NULL, 'invalidDate');
-                  if ($date != 'invalidDate') {
-                    $customVal = $date;
-                  }
+                  $customVal = $displayValue = $params[$name];
+                  $dontfix = TRUE;
                 }
                 else {
                   $customVal = $params[$name];
@@ -1520,8 +1519,9 @@ WHERE  id = $cfID
                 $returnProperties = array($name => 1);
                 $query            = new CRM_Contact_BAO_Query($params, $returnProperties, $fields);
                 $options          = &$query->_options;
-                $displayValue     = CRM_Core_BAO_CustomField::getDisplayValue($customVal, $cfID, $options);
-
+                if(!$dontfix){
+                  $displayValue     = CRM_Core_BAO_CustomField::getDisplayValue($customVal, $cfID, $options);
+                }
                 //Hack since we dont have function to check empty.
                 //FIXME in 2.3 using crmIsEmptyArray()
                 $customValue = TRUE;
