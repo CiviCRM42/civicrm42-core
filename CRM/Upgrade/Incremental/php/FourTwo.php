@@ -446,6 +446,11 @@ WHERE     cpse.price_set_id IS NULL";
       if (empty($optionValue))
         return;
     }
+    elseif (!CRM_Utils_Array::value('otherAmount', $options) && !CRM_Utils_Array::value('membership', $options)) {
+      //CRM-12273
+      //if options group, otherAmount, membersip is empty then return, contribution should be default price set
+      return;
+    }
 
     if (! CRM_Core_DAO::getFieldValue('CRM_Price_BAO_Set', $pageTitle, 'id', 'name', true)) {
       $setParams['name'] = $pageTitle;
@@ -632,8 +637,23 @@ WHERE     cpf.price_set_id = %1
       }
       else {
         $sql .= "AND cpfv.amount = %2";
+
+        //CRM-12273
+        //check if price_set_id is exist, if not use the default contribution amount
+        if (isset($result->price_set_id)){
+          $priceSetId = $result->price_set_id;
+        }
+        else{
+          $defaultPriceSets = CRM_Price_BAO_Set::getDefaultPriceSet();
+          foreach ($defaultPriceSets as $key => $pSet) {
+            if ($pSet['name'] == 'contribution_amount'){
+              $priceSetId = $pSet['setID'];
+            }
+          }
+        }
+
         $params = array(
-          '1' => array($result->price_set_id, 'Integer'),
+          '1' => array($priceSetId, 'Integer'),
           '2' => array($result->total_amount, 'String'),
         );
         $res = CRM_Core_DAO::executeQuery($sql, $params);
@@ -650,7 +670,7 @@ WHERE     cpf.price_set_id = %1
         }
         else {
           $params = array(
-            'price_set_id' => $result->price_set_id,
+            'price_set_id' => $priceSetId,
             'name' => 'other_amount',
           );
           $defaults = array();
