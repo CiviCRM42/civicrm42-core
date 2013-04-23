@@ -295,7 +295,9 @@ INNER JOIN civicrm_membership_payment mp ON m.id = mp.membership_id AND mp.contr
       FALSE, $default, $location
     );
     if ($abort && $value === NULL) {
-      CRM_Core_Error::debug_log_message("Could not find an entry for $name in $location" . print_r($location,1) . print_r(debug_backtrace(), 1));
+      CRM_Core_Error::debug_log_message("Could not find an entry for $name in $location");
+      CRM_Core_Error::debug_var('POST', $_POST);
+      CRM_Core_Error::debug_var('REQUEST', $_REQUEST);
       echo "Failure: Missing Parameter<p>";
       exit();
     }
