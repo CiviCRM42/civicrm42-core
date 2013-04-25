@@ -835,8 +835,14 @@ WHERE reminder.action_schedule_id = %1 AND reminder.action_date_time IS NULL
           $where[] = "e.membership_type_id IN ({$value})";
         }
 
+        $where[] = "( e.is_override IS NULL OR e.is_override = 0 )";
         $dateField = str_replace('membership_', 'e.', $actionSchedule->start_action_date);
         $notINClause = self::permissionedRelationships($contactField);
+
+        $membershipStatus = CRM_Member_PseudoConstant::membershipStatus(NULL, "is_current_member = 1 OR name = 'Expired'", 'id');
+        $mStatus = implode (',', $membershipStatus);
+        $where[] = "e.status_id IN ({$mStatus})";
+
       }
 
       if ($actionSchedule->group_id) {
@@ -857,8 +863,7 @@ reminder.entity_id          = e.id AND
 reminder.entity_table       = '{$mapping->entity}' AND
 reminder.action_schedule_id = %1";
 
-      $join[] = "INNER JOIN civicrm_contact c ON c.id = {$contactField}";
-      $where[] = "c.is_deleted = 0";
+      $join[] = "INNER JOIN civicrm_contact c ON c.id = {$contactField} AND c.is_deleted = 0 AND c.is_deceased = 0 ";
 
       if ($actionSchedule->start_action_date) {
         $startDateClause   = array();
