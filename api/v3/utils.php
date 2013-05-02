@@ -1462,7 +1462,8 @@ function _civicrm_api3_validate_html(&$params, &$fieldname, &$fieldInfo) {
  */
 function _civicrm_api3_validate_string(&$params, &$fieldname, &$fieldInfo) {
   // If fieldname exists in params
-  if ($value = CRM_Utils_Array::value($fieldname, $params)) {
+  $value = (string) CRM_Utils_Array::value($fieldname, $params,'');
+  if ($value ) {
     if (!CRM_Utils_Rule::xssString($value)) {
       throw new Exception('Illegal characters in input (potential scripting attack)');
     }
@@ -1474,16 +1475,12 @@ function _civicrm_api3_validate_string(&$params, &$fieldname, &$fieldInfo) {
     if (!empty ($fieldInfo['options'])) {
       // Validate & swap out any pseudoconstants / options
       $options = $fieldInfo['options'];
+      $lowerCaseOptions = array_map("strtolower", $options);
       // If value passed is not a key, it may be a label
       // Try to lookup key from label - if it can't be found throw error
-      if (!isset($options[$value]) ) {
-        if (!(in_array($value, $options))) {
-          if(array_key_exists($value, $options)){
-
-          }
-          else{
-            throw new Exception("$fieldname `$value` is not valid.");
-          }
+      if (!isset($options[strtolower($value)]) && !isset($options[$value]) ) {
+        if (!in_array(strtolower($value), $lowerCaseOptions)) {
+          throw new Exception("$fieldname `$value` is not valid.");
         }
       }
     }
