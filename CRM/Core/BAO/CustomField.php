@@ -1556,6 +1556,11 @@ SELECT id
             $value = '';
           }
         }
+        elseif(!empty($value) && !stristr(CRM_Core_DAO::VALUE_SEPARATOR, $value)){
+          // ie. we have been passed a value for a check box without separators e.g. by the
+          // api & are expected to handle checkboxes as we do select / multiselect
+          $value = CRM_Core_DAO::VALUE_SEPARATOR . $value .CRM_Core_DAO::VALUE_SEPARATOR;
+        }
       }
     }
 
