@@ -512,7 +512,7 @@ function _civicrm_api3_greeting_format_params($params) {
     }
 
     $customValue = $params['contact_id'] ? CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
-      $params['contact_id'],
+      $params['id'],
       "{$key}{$greeting}_custom"
     ) : FALSE;
 
