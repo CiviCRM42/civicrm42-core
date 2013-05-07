@@ -48,9 +48,15 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
    * @static
    */
   static function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'Website', CRM_Utils_Array::value('id', $params), $params);
+
     $website = new CRM_Core_DAO_Website();
     $website->copyValues($params);
-    return $website->save();
+    $website->save();
+
+    CRM_Utils_Hook::post($hook, 'Website', $website->id, $website);
+    return $website;
   }
 
   /**
