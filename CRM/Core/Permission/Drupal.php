@@ -182,7 +182,7 @@ class CRM_Core_Permission_Drupal {
       else {
         $clauses = array();
         $groups = implode(', ', self::$_viewPermissionedGroups[$groupKey]);
-        $clauses[] = ' ( civicrm_group_contact.group_id IN (' . implode(', ', array_keys(self::$_viewPermissionedGroups[$groupKey])) . " ) AND civicrm_group_contact.status = 'Added' ) ";
+        $clauses[] = '  civicrm_group_contact.group_id IN (' . implode(', ', array_keys(self::$_viewPermissionedGroups[$groupKey])) . "  ) ";
         $tables['civicrm_group_contact'] = 1;
         $whereTables['civicrm_group_contact'] = 1;
 
