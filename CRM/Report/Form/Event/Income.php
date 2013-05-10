@@ -38,6 +38,7 @@ class CRM_Report_Form_Event_Income extends CRM_Report_Form {
   CONST ROW_COUNT_LIMIT = 2;
 
   protected $_summary = NULL;
+  protected $_noFields = TRUE;
 
   protected $_add2groupSupported = FALSE; function __construct() {
 
@@ -291,6 +292,8 @@ class CRM_Report_Form_Event_Income extends CRM_Report_Form {
   function postProcess() {
     $this->beginPostProcess();
     $this->_setVariable = TRUE;
+
+    $noSelection = FALSE;
     if (empty($this->_params['id_value'][0])) {
       $this->_params['id_value'] = array();
       $this->_setVariable = FALSE;
@@ -303,6 +306,7 @@ class CRM_Report_Form_Event_Income extends CRM_Report_Form {
       foreach ($events as $key => $dnt) {
         $this->_params['id_value'][] = $key;
       }
+      $noSelection = TRUE;
     }
     $this->_rowsFound = count($this->_params['id_value']);
 
@@ -315,16 +319,22 @@ class CRM_Report_Form_Event_Income extends CRM_Report_Form {
       $count      = 0;
       $numRows    = $this->_limit;
 
-      while ($count < self::ROW_COUNT_LIMIT) {
-        if (!isset($this->_params['id_value'][$numRows])) {
-          break;
+      if (CRM_Utils_Array::value('id_op', $this->_params, 'in') == 'in' || $noSelection) {
+        while ($count < self::ROW_COUNT_LIMIT) {
+          if (!isset($this->_params['id_value'][$numRows])) {
+            break;
+          }
+
+          $showEvents[] = $this->_params['id_value'][$numRows];
+          $count++;
+          $numRows++;
         }
-
-        $showEvents[] = $this->_params['id_value'][$numRows];
-        $count++;
-        $numRows++;
+      } elseif ($this->_params['id_op'] == 'notin') {
+        $events = CRM_Event_PseudoConstant::event(NULL, NULL,
+          "is_template IS NULL OR is_template = 0"
+        );
+        $showEvents = array_diff(array_keys($events), $this->_params['id_value']);
       }
-
       $this->buildEventReport($showEvents);
     }
     else {
