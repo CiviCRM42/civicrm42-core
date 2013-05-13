@@ -1,0 +1,7 @@
+name = CiviCRM Multi Site support
+description = Multi Site Support to support a mulitlevel permissioned CiviCRM implementation
+version = 3.4
+dependencies[] = civicrm
+package = CiviCRM
+core = 6.x
+php = 5.2

@@ -1,0 +1,14 @@
+The following people and organizations sponsored and/or contributed new and improved features to the project.
+
+************************************************
+Key Maintainers for the 4.2 LTS release
+************************************************
+
+This release would not be possible without all people involved in creating the CiviCRM software as recognized in the Sponsors.txt file.
+
+In addition, the following people have contributed to this LTS release (alphabetical by company, then first name):
+
+CiviDesk - Nicolas Ganivet
+Emphanos - Allen Shaw, Young-Jin Kim
+Fuzion, NZ - Eileen McNaughton, Peter Davis, Torrance Hodgeson
+Mathieu Lufty

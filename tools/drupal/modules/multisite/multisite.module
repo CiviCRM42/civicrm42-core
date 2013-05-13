@@ -1,0 +1,306 @@
+<?php
+/*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 4.2                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007.                                       |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License along with this program; if not, contact CiviCRM LLC       |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2012
+ * $Id$
+ *
+ */
+function multisite_permission() {
+  return array(
+    'civicrm view all contacts in domain' => array(
+      'title' => t('CiviCRM view all contacts in domain'),
+      'description' => t('View all contacts in the domain group for this domain.')
+    )
+  );
+}
+/*
+ * d6 interation of permission to view contacts within the domain
+ */
+function multisite_perm() {
+  return array(
+    'civicrm view all contacts in domain'
+  );
+}
+function multisite_civicrm_tokens(&$tokens) {
+  $tokens['pirg'] = array('pirg.logo', 'pirg.header', 'pirg.footer');
+}
+
+function multisite_civicrm_tokenValues(&$values, &$contactIDs, $jobID) {
+  if (empty($contactIDs)) {
+    return NULL;
+  }
+
+  if (is_array($contactIDs)) {
+    $contactIDString = implode(',', array_values($contactIDs));
+    $single = FALSE;
+  }
+  else {
+    $contactIDString = "( $contactIDs )";
+    $single = TRUE;
+  }
+
+  // in the US PIRG case we'll also want to restrict the list of
+  // candidate orgs based on the jobID and all the groups that this
+  // token is being evaluated for
+  // leaving that as an exercise for the PIRG folks
+  // build a cache of all the orgs that the job belongs to
+  // restrict the below query to those orgs only
+  $jobClause = NULL;
+  if ($jobID) {
+    $orgIDString = _multisite_get_parent_orgs($jobID);
+    if (!empty($orgIDString)) {
+      $jobClause = " AND go.organization_id IN ( $orgIDString )";
+    }
+  }
+
+  // we give priority to the leaf orgs first
+  // be as specific as possible
+  $query = "
+SELECT DISTINCT(c.id) as contact_id,  go.organization_id as org_id
+FROM   civicrm_contact c,
+       civicrm_group_contact gc,
+       civicrm_group_organization go
+WHERE  gc.contact_id = c.id
+AND    go.group_id   = gc.group_id
+AND    c.id IN ( $contactIDString )
+       $jobClause
+ORDER BY org_id desc
+";
+
+  $dao = CRM_Core_DAO::executeQuery($query);
+  while ($dao->fetch()) {
+    if ($single) {
+      $value = &$values;
+    }
+    else {
+      if (!array_key_exists($dao->contact_id, $values)) {
+        $values[$dao->contact_id] = array();
+      }
+      $value = &$values[$dao->contact_id];
+    }
+
+    // the below values should call an auxilary function
+    // and we should cache them intelligently since there will be a lot
+    // more contacts than orgs
+    $value['pirg.logo'] = $dao->org_id;
+    $value['pirg.footer'] = $dao->org_id;
+    $value['pirg.header'] = $dao->org_id;
+  }
+}
+
+function multisite_civicrm_aclGroup($type, $contactID, $tableName, &$allGroups, &$currentGroups) {
+  // only process saved search
+  if ($tableName != 'civicrm_saved_search') {
+    return;
+  }
+  require_once 'CRM/Core/BAO/Domain.php';
+  $groupID = CRM_Core_BAO_Domain::getGroupId();
+  $currentGroups = _multisite_get_all_child_groups($groupID, FALSE);
+}
+
+function multisite_civicrm_aclWhereClause($type, &$tables, &$whereTables, &$contactID, &$where) {
+  if (!$contactID || ! CRM_Core_Permission::check('civicrm view all contacts in domain')) {
+    return;
+  }
+  require_once 'CRM/Core/BAO/Domain.php';
+  $groupID = CRM_Core_BAO_Domain::getGroupId();
+  $childOrgs = _multisite_get_all_child_groups($groupID);
+
+  if (!empty($childOrgs)) {
+    $groupTable = 'civicrm_group_contact';
+    $tables[$groupTable] = $whereTables[$groupTable] = "LEFT JOIN {$groupTable} multisiteGroupTable ON contact_a.id = multisiteGroupTable.contact_id";
+
+    $where = "(multisiteGroupTable.group_id IN (" . implode(',', $childOrgs) . ") AND multisiteGroupTable.status IN ('Added') AND contact_a.is_deleted = 0)";
+  }
+}
+
+function _multisite_get_parent_orgs($jobID) {
+  static $_cache = NULL;
+  if (!$jobID ||
+    !is_numeric($jobID) ||
+    $jobID < 1
+  ) {
+    return NULL;
+  }
+
+  if (!array_key_exists($jobID, $_cache)) {
+    $query = "
+SELECT g.parents as parents, g.id as groupID
+FROM   civicrm_mailing_job mj
+INNER JOIN civicrm_mailing_group mg ON mj.mailing_id = mg.mailing_id
+INNER JOIN civicrm_group g ON (mg.entity_id = g.id AND mg.entity_table = 'civicrm_group')
+WHERE  mj.id = %1
+";
+    $params = array(1 => array($jobID, 'Integer'));
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
+
+    $parents = array();
+    while ($dao->fetch()) {
+      $parents[$dao->groupID] = 1;
+      if ($dao->parents) {
+        $parentIDs = explode(',', $dao->parents);
+        foreach ($parentIDs as $pID) {
+          $parents[$pID] = 1;
+        }
+      }
+    }
+
+    if (empty($parents)) {
+      CRM_Core_Error::fatal();
+    }
+
+    $parentIDString = implode(',', array_keys($parents));
+    $query = "
+SELECT GROUP_CONCAT(DISTINCT(go.organization_id))
+FROM   civicrm_group_organization go
+WHERE  go.group_id IN ( $parentIDString )
+";
+
+    $orgIDs = CRM_Core_DAO::singleValueQuery($query);
+    if (empty($orgIDs)) {
+      CRM_Core_Error::fatal();
+    }
+
+    $_cache[$jobID] = $orgIDs;
+  }
+
+  return $_cache[$jobID];
+}
+
+function _civicrm_get_permissioned_orgs($contactID) {
+  static $_cache = NULL;
+  if (!$contactID ||
+    !is_numeric($contactID) ||
+    $contactID < 1
+  ) {
+    return NULL;
+  }
+
+  if (!array_key_exists($contactID, $_cache)) {
+    $query = "
+SELECT DISTINCT(go.organization_id) as org_id, go.group_id as group_id
+FROM   civicrm_group_organization go,
+       civicrm_relationship r
+WHERE  r.contact_id_a = go.organization_id
+AND    r.contact_id_b = %1
+AND    r.relationship_type_id = MULTISITE_PERMISSIONED_RELATIONSHIP_TYPE_ID
+AND    r.is_permission_b_a = 1
+";
+    $params = array(1 => array($contactID, 'Integer'));
+
+    $values = array();
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
+    while ($dao->fetch()) {
+      $values[] = array('organization_id' => $dao->org_id,
+        'group_id' => $dao->group_id,
+      );
+    }
+    $_cache[$contactID] = $values;
+  }
+
+  return $_cache[$contactID];
+}
+
+function _multisite_get_child_groups($orgID) {
+  static $_cache = NULL;
+
+  if (!$orgID ||
+    !is_numeric($orgID) ||
+    $orgID < 1
+  ) {
+    return NULL;
+  }
+
+  if (!array_key_exists($orgID, $_cache)) {
+    $groupID = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_GroupOrganization',
+      $orgID,
+      'group_id',
+      'organization_id'
+    );
+
+    $_cache[$orgID] = _multisite_get_all_child_groups($groupID);
+  }
+
+  return $_cache[$orgID];
+}
+
+function _multisite_get_all_child_groups($groupID, $includeParent = TRUE) {
+  static $_cache = array();
+
+  if (!array_key_exists($groupID, $_cache)) {
+    require_once 'CRM/Core/BAO/Cache.php';
+    $childGroups = &CRM_Core_BAO_Cache::getItem('descendant groups for an org', $groupID);
+
+    if (empty($childGroups)) {
+      $childGroups = array();
+
+      $query = "
+SELECT children
+FROM   civicrm_group
+WHERE  children IS NOT NULL
+AND    id IN ";
+
+      if (!is_array($groupID)) {
+        $groupIDs = array($groupID);
+      }
+
+      while (!empty($groupIDs)) {
+        $groupIDString = implode(',', $groupIDs);
+
+        $realQuery = $query . " ( $groupIDString )";
+        $dao       = CRM_Core_DAO::executeQuery($realQuery);
+        $groupIDs  = array();
+        while ($dao->fetch()) {
+          if ($dao->children) {
+            $childIDs = explode(',', $dao->children);
+            foreach ($childIDs as $childID) {
+              if (!array_key_exists($childID, $childGroups)) {
+                $childGroups[$childID] = 1;
+                $groupIDs[] = $childID;
+              }
+            }
+          }
+        }
+      }
+
+      CRM_Core_BAO_Cache::setItem($childGroups, 'descendant groups for an org', $groupID);
+    }
+    $_cache[$groupID] = $childGroups;
+  }
+
+  if ($includeParent ||
+    CRM_Core_Permission::check('administer Multiple Organizations')
+  ) {
+    return array_keys(array($groupID => 1) + $_cache[$groupID]);
+  }
+  else {
+    return array_keys($_cache[$groupID]);
+  }
+}
+
