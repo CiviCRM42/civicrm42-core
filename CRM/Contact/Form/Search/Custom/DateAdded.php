@@ -99,7 +99,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
 
     $this->_includeGroups = CRM_Utils_Array::value('includeGroups', $this->_formValues, array());
@@ -119,10 +119,14 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
       $this->_groups = TRUE;
     }
 
-    $selectClause = "contact_a.id  as contact_id,
-                         contact_a.contact_type as contact_type,
-                         contact_a.sort_name    as sort_name,
-                         d.date_added           as date_added";
+    if ($justIDs) {
+      $select = "contact_a.id as contact_id";
+    else {
+      $selectClause = "contact_a.id  as contact_id,
+                       contact_a.contact_type as contact_type,
+                       contact_a.sort_name    as sort_name,
+                      d.date_added           as date_added";
+    }
 
     $groupBy = " GROUP BY contact_id ";
     return $this->sql($selectClause,
@@ -164,7 +168,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
           GROUP BY
               civicrm_contact.id
           HAVING
-              date_added >= '$startDate' 
+              date_added >= '$startDate'
               $endDateFix";
 
     if ($this->_debug > 0) {
@@ -215,8 +219,8 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
         $excludeGroup = "INSERT INTO  Xg_{$this->_tableName} ( contact_id )
                   SELECT  DISTINCT civicrm_group_contact.contact_id
                   FROM civicrm_group_contact, dates_{$this->_tableName} AS d
-                  WHERE 
-                     d.id = civicrm_group_contact.contact_id AND 
+                  WHERE
+                     d.id = civicrm_group_contact.contact_id AND
                      civicrm_group_contact.status = 'Added' AND
                      civicrm_group_contact.group_id IN( {$xGroups})";
 
@@ -229,8 +233,8 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
 
             $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
 
-            $smartSql = $smartSql . " AND contact_a.id NOT IN ( 
-                              SELECT contact_id FROM civicrm_group_contact 
+            $smartSql = $smartSql . " AND contact_a.id NOT IN (
+                              SELECT contact_id FROM civicrm_group_contact
                               WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
 
             $smartGroupQuery = " INSERT IGNORE INTO Xg_{$this->_tableName}(contact_id) $smartSql";
@@ -268,7 +272,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
         $includeGroup .= " LEFT JOIN        Xg_{$this->_tableName}
                                           ON        d.id = Xg_{$this->_tableName}.contact_id";
       }
-      $includeGroup .= " WHERE           
+      $includeGroup .= " WHERE
                                      civicrm_group_contact.status = 'Added'  AND
                                      civicrm_group_contact.group_id IN($iGroups)";
 
@@ -297,7 +301,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
                                    SELECT id AS contact_id
                                    FROM dates_{$this->_tableName} )";
 
-          $smartSql .= " AND contact_a.id NOT IN ( 
+          $smartSql .= " AND contact_a.id NOT IN (
                                    SELECT contact_id FROM civicrm_group_contact
                                    WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
 
@@ -307,7 +311,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
           }
 
           $smartGroupQuery = " INSERT IGNORE INTO
-                        Ig_{$this->_tableName}(contact_id) 
+                        Ig_{$this->_tableName}(contact_id)
                         $smartSql";
 
           CRM_Core_DAO::executeQuery($smartGroupQuery, CRM_Core_DAO::$_nullArray);
@@ -319,7 +323,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded extends CRM_Contact_Form_Search_C
           $insertGroupNameQuery = "UPDATE IGNORE Ig_{$this->_tableName}
                         SET group_names = (SELECT title FROM civicrm_group
                             WHERE civicrm_group.id = $values)
-                        WHERE Ig_{$this->_tableName}.contact_id IS NOT NULL 
+                        WHERE Ig_{$this->_tableName}.contact_id IS NOT NULL
                             AND Ig_{$this->_tableName}.group_names IS NULL";
           CRM_Core_DAO::executeQuery($insertGroupNameQuery, CRM_Core_DAO::$_nullArray);
           if ($this->_debug > 0) {

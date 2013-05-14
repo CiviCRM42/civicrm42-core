@@ -113,12 +113,17 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-    $selectClause = "contact_a.id   as contact_id,
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "contact_a.id   as contact_id,
                          contact_a.contact_type as contact_type,
                          contact_a.sort_name    as sort_name,
                          civicrm_email.email    as email";
+    }
 
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,
@@ -168,7 +173,7 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
       $excludeGroup = "INSERT INTO  Xg_{$this->_tableName} ( contact_id )
               SELECT  DISTINCT civicrm_group_contact.contact_id
               FROM civicrm_group_contact
-              WHERE 
+              WHERE
                  civicrm_group_contact.status = 'Added' AND
                  civicrm_group_contact.group_id IN ( {$xGroups} )";
 
@@ -181,8 +186,8 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
 
           $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
 
-          $smartSql = $smartSql . " AND contact_a.id NOT IN ( 
-                          SELECT contact_id FROM civicrm_group_contact 
+          $smartSql = $smartSql . " AND contact_a.id NOT IN (
+                          SELECT contact_id FROM civicrm_group_contact
                           WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
 
           $smartGroupQuery = " INSERT IGNORE INTO Xg_{$this->_tableName}(contact_id) $smartSql";
@@ -218,7 +223,7 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
       $includeGroup .= " LEFT JOIN        Xg_{$this->_tableName}
                                       ON        civicrm_group_contact.contact_id = Xg_{$this->_tableName}.contact_id";
     }
-    $includeGroup .= " WHERE           
+    $includeGroup .= " WHERE
                                  civicrm_group_contact.status = 'Added'  AND
                                  civicrm_group_contact.group_id IN($iGroups)";
 
@@ -243,7 +248,7 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
 
         $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
 
-        $smartSql .= " AND contact_a.id NOT IN ( 
+        $smartSql .= " AND contact_a.id NOT IN (
                                SELECT contact_id FROM civicrm_group_contact
                                WHERE civicrm_group_contact.group_id = {$values} AND civicrm_group_contact.status = 'Removed')";
 
@@ -252,14 +257,14 @@ class CRM_Contact_Form_Search_Custom_RandomSegment extends CRM_Contact_Form_Sear
           $smartSql .= " AND contact_a.id NOT IN (SELECT contact_id FROM  Xg_{$this->_tableName})";
         }
 
-        $smartGroupQuery = " INSERT IGNORE INTO Ig_{$this->_tableName}(contact_id) 
+        $smartGroupQuery = " INSERT IGNORE INTO Ig_{$this->_tableName}(contact_id)
                     $smartSql";
 
         CRM_Core_DAO::executeQuery($smartGroupQuery);
         $insertGroupNameQuery = "UPDATE IGNORE Ig_{$this->_tableName}
                     SET group_names = (SELECT title FROM civicrm_group
                         WHERE civicrm_group.id = $values)
-                    WHERE Ig_{$this->_tableName}.contact_id IS NOT NULL 
+                    WHERE Ig_{$this->_tableName}.contact_id IS NOT NULL
                         AND Ig_{$this->_tableName}.group_names IS NULL";
         CRM_Core_DAO::executeQuery($insertGroupNameQuery);
       }
