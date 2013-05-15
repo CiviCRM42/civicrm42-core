@@ -809,7 +809,7 @@ abstract class CRM_Contribute_Import_Parser {
     }
 
     foreach ($values as $k => $v) {
-      $values[$k] = preg_replace("/^$enclosure(.*) $enclosure$/", '$1', $v);
+      $values[$k] = preg_replace("/^$enclosure(.*)$enclosure$/", '$1', $v);
     }
   }
 
