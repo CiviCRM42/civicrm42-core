@@ -37,7 +37,9 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
 
 */
 
-(function($){
+var CRM = CRM || {};
+
+(function($, CRM) {
       var defaults = {
     	  success: function(result,settings){
     	      var successMsg = 'Saved &nbsp; <a href="#" id="closerestmsg">'+ settings.closetxt +'</a>'; 
@@ -64,7 +66,42 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
     	  ajaxURL: "/civicrm/ajax/rest",
     	  msgbox: '#restmsg'
       };
+  /**
+   * Almost like {crmURL} but on the client side
+   * eg: var url = CRM.url('civicrm/contact/view', {reset:1,cid:42});
+   * or: $('a.my-link').crmURL();
+   */
+  var tplURL = '/civicrm/example?placeholder';
+  var urlInitted = false;
+  CRM.url = function (p, params) {
+    if (p == "init") {
+      tplURL = params;
+      urlInitted = true;
+      return;
+    }
+    if (!urlInitted) {
+      console && console.log && console.log('Warning: CRM.url called before initialization');
+    }
+    params = params || '';
+    var frag = p.split ('?');
+    var url = tplURL.replace("civicrm/example", frag[0]);
 
+    if (typeof(params) == 'string') {
+      url = url.replace("placeholder", params);
+    }
+    else {
+      url = url.replace("placeholder", $.param(params));
+    }
+    if (frag[1]) {
+      url += (url.indexOf('?') === (url.length - 1) ? '' : '&') + frag[1];
+    }
+    // remove trailing "?"
+    if (url.indexOf('?') === (url.length - 1)) {
+      url = url.slice(0, (url.length - 1));
+    }
+    return url;
+  };
+  
       $.fn.crmAPI = function(entity,action,params,options) {
 //    	  params ['fnName'] = "civicrm/"+entity+"/"+action;
     	  params ['entity'] = entity;
@@ -212,5 +249,78 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
       });      
     };
 
-})(jQuery);
+  /**
+   * AJAX api
+   */
+  CRM.api = function(entity, action, params, options) {
+    // Default settings
+    var json = false,
+    settings = {
+      context: null,
+      success: function(result, settings) {
+        return true;
+      },
+      error: function(result, settings) {
+        $().crmError(result.error_message, ts('Error'));
+        return false;
+      },
+      callBack: function(result, settings) {
+        if (result.is_error == 1) {
+          return settings.error.call(this, result, settings);
+        }
+        return settings.success.call(this, result, settings);
+      },
+      ajaxURL: 'civicrm/ajax/rest',
+    };
+    action = action.toLowerCase();
+    // Default success handler
+    switch (action) {
+      case "update":
+      case "create":
+      case "setvalue":
+      case "replace":
+        settings.success = function() {
+          CRM.alert('', ts('Saved'), 'success');
+          return true;
+        };
+        break;
+      case "delete":
+        settings.success = function() {
+          CRM.alert('', ts('Removed'), 'success');
+          return true;
+        };
+    }
+    for (var i in params) {
+      if (i.slice(0, 4) == 'api.' || typeof(params[i]) == 'Object') {
+        json = true;
+        break;
+      }
+    }
+    if (json) {
+      params = {
+        entity: entity,
+        action: action,
+        json: JSON.stringify(params)
+      };
+    }
+    else {
+      params.entity = entity;
+      params.action = action;
+      params.json = 1;
+    }
+    // Pass copy of settings into closure to preserve its value during multiple requests
+    (function(stg) {
+      $.ajax({
+        url: stg.ajaxURL.indexOf('http') === 0 ? stg.ajaxURL : CRM.url(stg.ajaxURL),
+        dataType: 'json',
+        data: params,
+        type: action.indexOf('get') < 0 ? 'POST' : 'GET',
+        success: function(result) {
+          stg.callBack.call(stg.context, result, stg);
+        }
+      });
+    })($.extend({}, settings, options));
+  };
+
+})(jQuery, CRM);
 //})(cj);
