@@ -170,7 +170,10 @@ class CRM_Report_Form_Pledge_Detail extends CRM_Report_Form {
           ),
         ),
       ),
-    ) + $this->addAddressFields(FALSE, FALSE);
+    )
+    + $this->getAddressColumns(array('group_by' => FALSE))
+    + $this->getPhoneColumns();
+
 
     $this->_tagFilter = TRUE;
     parent::__construct();
@@ -228,15 +231,8 @@ class CRM_Report_Form_Pledge_Detail extends CRM_Report_Form {
       ";
     }
 
-    // include address field if address column is to be included
-    if ($this->_addressField) {
-      $this->_from .= "
-                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
-                           ON ({$this->_aliases['civicrm_contact']}.id =
-                               {$this->_aliases['civicrm_address']}.contact_id) AND
-                               {$this->_aliases['civicrm_address']}.is_primary = 1\n";
-    }
-
+    $this->addPhoneFromClause();
+    $this->addAddressFromClause();
     // include email field if email column is to be included
     if ($this->_emailField) {
       $this->_from .= "

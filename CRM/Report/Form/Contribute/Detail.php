@@ -83,9 +83,9 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
           ),
         ),
         'order_bys' =>
-        array( 
-          'sort_name' => array( 
-            'title' => ts('Last Name, First Name'), 
+        array(
+          'sort_name' => array(
+            'title' => ts('Last Name, First Name'),
             'default' => '1',
             'default_weight' => '0',
             'default_order' => 'ASC'
@@ -402,10 +402,7 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
                       ON {$this->_aliases['civicrm_contribution_ordinality']}.id = {$this->_aliases['civicrm_contribution']}.id";
     }
 
-    $this->_from .= "
-               LEFT JOIN  civicrm_phone {$this->_aliases['civicrm_phone']} 
-                      ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
-                         {$this->_aliases['civicrm_phone']}.is_primary = 1)";
+    $this->addPhoneFromClause();
 
     if ($this->_addressField OR (!empty($this->_params['state_province_id_value']) OR !empty($this->_params['country_id_value']))) {
       $this->_from .= "
