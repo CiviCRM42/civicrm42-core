@@ -560,7 +560,7 @@ function civicrm_api3_contact_quicksearch($params) {
 
 function civicrm_api3_contact_getquick($params) {
   civicrm_api3_verify_mandatory($params, NULL, array('name'));
-  $name = CRM_Utils_Array::value('name', $params);
+  $name = CRM_Utils_Type::escape($params['name'], 'String');
 
   // get the autocomplete options from settings
   require_once 'CRM/Core/BAO/Setting.php';
@@ -637,7 +637,7 @@ function civicrm_api3_contact_getquick($params) {
     $where .= " AND contact_type = \"Organization\"";
     //set default for current_employer
     if ($orgId = CRM_Utils_Array::value('id', $params)) {
-      $where .= " AND cc.id = {$orgId}";
+      $where .= " AND cc.id = "  . (int) $orgId;
     }
 
     // CRM-7157, hack: get current employer details when
@@ -668,8 +668,13 @@ function civicrm_api3_contact_getquick($params) {
     }
   }
 
+  //set default for current_employer or return contact with particular id
+  if (CRM_Utils_Array::value('id', $params)) {
+    $where .= " AND cc.id = " . (int) $params['id'];
+  }
+
   if (CRM_Utils_Array::value('cid', $params)) {
-    $where .= " AND cc.id <> {$params['cid']}";
+    $where .= " AND cc.id <> " . (int) $params['cid'];
   }
 
   //contact's based of relationhip type
