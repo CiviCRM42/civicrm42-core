@@ -43,9 +43,18 @@
     <div class="spacer"></div>
 </div>
     {literal}
+  <style type="text/css">
+    #navigation-tree li {
+      font-weight: normal;
+    }
+    #navigation-tree > ul > li {
+      font-weight: bold;
+    }
+  </style>
     <script type="text/javascript">
     cj(function () {
-        cj("#navigation-tree").jstree({
+       var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
+       cj("#navigation-tree").jstree({
 	     plugins : [ "themes", "json_data", "dnd","ui", "crrm","contextmenu" ],
              json_data  : {
                 ajax:{
@@ -54,6 +63,12 @@
                    url : {/literal}"{crmURL p='civicrm/ajax/menu' h=0 q='key='}{crmKey name='civicrm/ajax/menu'}"{literal}
                  }
             },
+            themes: {
+              "theme": 'default',
+              "dots": true,
+              "icons": false,
+              "url": resourceBase + 'packages/jquery/plugins/jstree/themes/default/style.css'
+             },
              rules : {
                 droppable : [ "tree-drop" ],
                 multiple : true,

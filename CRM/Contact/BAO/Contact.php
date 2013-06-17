@@ -301,14 +301,13 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
       )) {
       // in order to make sure that every contact must be added to a group (CRM-4613) -
       $domainGroupID = CRM_Core_BAO_Domain::getGroupId();
-      if (CRM_Utils_Array::value('group', $params) && is_array($params['group'])) {
-        $grpFlp = array_flip($params['group']);
-        if (!array_key_exists(1, $grpFlp)) {
+      if(!empty($domainGroupID)){
+        if (CRM_Utils_Array::value('group', $params) && is_array($params['group'])) {
           $params['group'][$domainGroupID] = 1;
         }
-      }
-      else {
-        $params['group'] = array($domainGroupID => 1);
+        else {
+          $params['group'] = array($domainGroupID => 1);
+        }
       }
     }
 
@@ -1972,7 +1971,7 @@ ORDER BY civicrm_email.is_primary DESC";
           }
 
           $type = $data['contact_type'];
-          if ( CRM_Utils_Array::value('contact_sub_type', $data) ) { 
+          if ( CRM_Utils_Array::value('contact_sub_type', $data) ) {
             $type = $data['contact_sub_type'];
             $type = explode(CRM_Core_DAO::VALUE_SEPARATOR, trim($type, CRM_Core_DAO::VALUE_SEPARATOR));
             // generally a contact even if, has multiple subtypes the parent-type is going to be one only

@@ -89,10 +89,13 @@ function initTagTree() {
         cj("#tags").html( tagLabels );
         ( tagLabels ) ? cj("#tagLink,#tags").show( ) : cj("#tagLink,#tags").hide( );
     });
- 
+    var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
     //load js tree.
-    cj("#tagtree").jstree({"plugins" : ["themes", "html_data"]});
-   
+    cj("#tagtree").jstree({
+        "plugins" : ["themes", "html_data"],
+        "themes": {"url": resourceBase + 'packages/jquery/plugins/jstree/themes/default/style.css'}
+    });
+
     {/literal}
     {if $permission neq 'edit'}
     {literal}
