@@ -80,7 +80,7 @@ var CRM = CRM || {};
       return;
     }
     if (!urlInitted) {
-      console && console.log && console.log('Warning: CRM.url called before initialization');
+    //  console && console.log && console.log('Warning: CRM.url called before initialization');
     }
     params = params || '';
     var frag = p.split ('?');
