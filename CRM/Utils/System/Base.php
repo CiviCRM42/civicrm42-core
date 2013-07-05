@@ -89,10 +89,18 @@ class CRM_Utils_System_Base {
     return $url;
   }
 
-  /*
-     * Currently this is just helping out the test class as defaults is calling it - maybe move fix to defaults
-     */
+  /**
+   * Currently this is just helping out the test class as defaults is calling it - maybe move fix to defaults
+   */
   function cmsRootPath() {
+  }
+
+  /**
+   * Perform an post login activities required by the UF -
+   * e.g. for drupal: records a watchdog message about the new session, saves the login timestamp, calls hook_user op 'login' and generates a new session.
+   * @param array $edit: The array of form values submitted by the user.
+   */
+  function userLoginFinalize($edit = array()){
   }
 }
 
