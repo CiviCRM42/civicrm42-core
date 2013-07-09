@@ -115,7 +115,7 @@ class api_v3_AddressTest extends CiviUnitTestCase {
     $params['street_number_suffix'] = 'really long string';
     $result = civicrm_api('address', 'create', $params);
     $this->assertEquals(1, $result['is_error'], 'In line ' . __LINE__);
-    $this->assertEquals(2100, $result['error_code']);
+    $this->assertEquals(2101, $result['error_code']);
   }
   /*
      * is_primary shoule be set as a default. ie. create the address, unset the params & recreate.
