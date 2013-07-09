@@ -96,11 +96,12 @@ class CRM_Utils_System_Base {
   }
 
   /**
-   * Perform an post login activities required by the UF -
-   * e.g. for drupal: records a watchdog message about the new session, saves the login timestamp, calls hook_user op 'login' and generates a new session.
-   * @param array $edit: The array of form values submitted by the user.
+   * Perform any post login activities required by the CMD -
+   * e.g. for drupal: records a watchdog message about the new session, saves the login timestamp,
+   * calls hook_user op 'login' and generates a new session.
+   * @param array params Params to be passed to the CMS function.
    */
-  function userLoginFinalize($edit = array()){
+  function userLoginFinalize($params = array()){
   }
 }
 
