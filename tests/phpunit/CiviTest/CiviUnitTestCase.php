@@ -2107,33 +2107,40 @@ AND    ( TABLE_NAME LIKE 'civicrm_value_%' )
 
     $result = civicrm_api($entity, 'GetSingle', array(
       'id' => $id,
-        'version' => $this->_apiversion,
-      ));
+      'version' => $this->_apiversion,
+    ));
 
     if ($delete) {
       civicrm_api($entity, 'Delete', array(
         'id' => $id,
-          'version' => $this->_apiversion,
-        ));
+        'version' => $this->_apiversion,
+      ));
     }
     $dateFields = $keys = array();
     $fields = civicrm_api($entity, 'getfields', array('version' => 3, 'action' => 'get'));
     foreach ($fields['values'] as $field => $settings) {
-      $keys[CRM_Utils_Array::Value('name', $settings, $field)] = array_key_exists($field, $result) ? $field : CRM_Utils_Array::Value('name', $settings, $field);
-      if ($settings['type'] == CRM_Utils_Type::T_DATE) {
+      if (array_key_exists($field, $result)) {
+        $keys[CRM_Utils_Array::Value('name', $settings, $field)] = $field;
+      }
+      else {
+        $keys[CRM_Utils_Array::Value('name', $settings, $field)] = CRM_Utils_Array::value('name', $settings, $field);
+      }
+
+      if (CRM_Utils_Array::value('type', $settings) == CRM_Utils_Type::T_DATE) {
         $dateFields[] = $field;
       }
     }
-    if (strtolower($entity) == 'contribution') {
 
+    if (strtolower($entity) == 'contribution') {
       $params['receive_date'] = date('Y-m-d', strtotime($params['receive_date']));
       // this is not returned in id format
       unset($params['payment_instrument_id']);
       $params['contribution_source'] = $params['source'];
       unset($params['source']);
     }
+
     foreach ($params as $key => $value) {
-      if ($key == 'version') {
+      if ($key == 'version' || substr($key, 0, 3) == 'api') {
         continue;
       }
       if (in_array($key, $dateFields)) {
@@ -2143,6 +2150,7 @@ AND    ( TABLE_NAME LIKE 'civicrm_value_%' )
       $this->assertEquals($value, $result[$keys[$key]], $key . " GetandCheck function determines that value: $value doesn't match " . print_r($result, TRUE) . $errorText);
     }
   }
+
   /*
    *Function to get formatted values in  the actual and expected result
    *@param array $actual actual calculated values
