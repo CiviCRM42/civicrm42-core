@@ -204,27 +204,7 @@ class api_v3_CustomValueContactTypeTest extends CiviUnitTestCase {
     $this->assertEquals($elements["custom_{$this->IndiStudentField[id]}"], 'Test String', 'in line ' . __LINE__);
   }
 
-  /**
-   * Add custom data(of Individual Student)to a Contact Type : Individual
-   */
-  function testAddIndividualStudentCustomDataToIndividual() {
 
-    $params = array(
-      'contact_id' => $this->individual,
-      'contact_type' => 'Individual',
-      "custom_{$this->IndiStudentField[id]}" => 'Test String',
-      'version' => $this->_apiversion,
-      'debug' => 1,
-    );
-
-    $contact = civicrm_api('contact', 'create', $params);
-    $this->assertTrue(is_array($contact['undefined_fields']), __LINE__);
-    $this->assertTrue(in_array("custom_{$this->IndiStudentField[id]}", $contact['undefined_fields']), __LINE__);
-    $params['contact_sub_type'] = 'Student';
-    $contact = civicrm_api('contact', 'create', $params);
-
-    $this->assertTrue(!is_array($contact['undefined_fields']) || !in_array("custom_{$this->IndiStudentField[id]}", $contact['undefined_fields']), __LINE__);
-  }
 
   /**
    * Add custom data of Individual Student to a Contact Type : Individual - parent
