@@ -2111,13 +2111,13 @@ AND    ( TABLE_NAME LIKE 'civicrm_value_%' )
     ));
 
     if ($delete) {
-      civicrm_api($entity, 'Delete', array(
+      $this->callAPISuccess($entity, 'Delete', array(
         'id' => $id,
         'version' => $this->_apiversion,
       ));
     }
     $dateFields = $keys = array();
-    $fields = civicrm_api($entity, 'getfields', array('version' => 3, 'action' => 'get'));
+    $fields = $this->callAPISuccess($entity, 'getfields', array('version' => 3, 'action' => 'get'));
     foreach ($fields['values'] as $field => $settings) {
       if (array_key_exists($field, $result)) {
         $keys[CRM_Utils_Array::Value('name', $settings, $field)] = $field;
