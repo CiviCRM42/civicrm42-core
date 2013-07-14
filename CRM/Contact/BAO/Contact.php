@@ -413,7 +413,7 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
       // since resetting and
       // rebuilding cache could be expensive (for many contacts). We might come out with better
       // approach in future.
-      CRM_Contact_BAO_Contact_Utils::clearContactCaches();
+      CRM_Contact_BAO_Contact_Utils::clearContactCaches($contact->id);
     }
 
     if ($invokeHooks) {

@@ -920,13 +920,14 @@ Group By  componentId";
     return $contactNames;
   }
 
-  static
-  function clearContactCaches() {
+  static function clearContactCaches($contactID = NULL) {
     // clear acl cache if any.
     CRM_ACL_BAO_Cache::resetCache();
 
-    // also clear prev/next dedupe cache
-    CRM_Core_BAO_PrevNextCache::deleteItem();
+    if (empty($contactID)) {
+      // also clear prev/next dedupe cache - if no contactID passed in
+      CRM_Core_BAO_PrevNextCache::deleteItem();
+    }
 
     // reset the group contact cache for this group
     CRM_Contact_BAO_GroupContactCache::remove();
