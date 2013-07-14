@@ -194,12 +194,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
       'version' => $this->_apiversion,
     );
 
-    $result = civicrm_api('activity', 'create', $params);
-
-    // we should use the session contact ID, CRM-8180
-    $this->assertEquals($result['is_error'], 0,
-      "In line " . __LINE__
-    );
+    $result = $this->callAPISuccess('activity', 'create', $params);
   }
 
   /**
@@ -833,8 +828,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
       'sequential' => 1,
       'return.custom_' . $ids['custom_field_id'] => 1,
     );
-    $result = civicrm_api('activity', 'get', $params, TRUE);
-    $this->assertAPISuccess($result, 'in line ' . __LINE__);
+    $result = $this->callAPISuccess('activity', 'get', $params, TRUE);
     $this->documentMe($params, $result, __FUNCTION__, __FILE__);
     $this->assertEquals(0, $result['is_error'], "Error message: " . CRM_Utils_Array::value('error_message', $result));
     $this->assertEquals("custom string", $result['values'][0]['custom_' . $ids['custom_field_id']], ' in line ' . __LINE__);
@@ -1268,9 +1262,8 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
       'contact_id' => 17,
       'version' => $this->_apiversion,
     );
-    $result = civicrm_api('activity', 'get', $params);
+    $result = $this->callAPISuccess('activity', 'get', $params);
 
-    $this->assertAPISuccess($result, 'in line ' . __LINE__);
     $this->assertEquals(2, $result['count'], 'In line ' . __LINE__);
     $this->assertEquals($this->test_activity_type_value, $result['values'][$activity['id']]['activity_type_id'], 'In line ' . __LINE__);
     $this->assertEquals('Test activity type', $result['values'][$activity['id']]['activity_name'], 'In line ' . __LINE__);
