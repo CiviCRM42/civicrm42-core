@@ -70,10 +70,8 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
   }
 
   public function testCreatePriceFieldValue() {
-    $result = civicrm_api($this->_entity, 'create', $this->_params);
+    $result = $this->callAPIAndDocument($this->_entity, 'create', $this->_params, __FUNCTION__, __FILE__);
     $this->id = $result['id'];
-    $this->documentMe($this->_params, $result, __FUNCTION__, __FILE__);
-    $this->assertAPISuccess($result, 'In line ' . __LINE__);
     $this->assertEquals(1, $result['count'], 'In line ' . __LINE__);
     $this->assertNotNull($result['values'][$result['id']]['id'], 'In line ' . __LINE__);
     $this->getAndCheck($this->_params, $result['id'], $this->_entity);
@@ -98,7 +96,7 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
     $startCount = civicrm_api($this->_entity, 'getcount', array(
       'version' => $this->_apiversion,
       ));
-    $createResult = civicrm_api($this->_entity, 'create', $this->_params);
+    $createResult = $this->callAPISuccess($this->_entity, 'create', $this->_params);
     $deleteParams = array('version' => $this->_apiversion, 'id' => $createResult['id']);
     $deleteResult = civicrm_api($this->_entity, 'delete', $deleteParams);
     $this->documentMe($deleteParams, $deleteResult, __FUNCTION__, __FILE__);
@@ -110,8 +108,7 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
   }
 
   public function testGetFieldsPriceFieldValue() {
-    $result = civicrm_api($this->_entity, 'getfields', array('version' => $this->_apiversion, 'action' => 'create'));
-    $this->assertAPISuccess($result, 'In line ' . __LINE__);
+    $result = $this->callAPISuccess($this->_entity, 'getfields', array('version' => $this->_apiversion, 'action' => 'create'));
     $this->assertEquals(1, $result['values']['max_value']['type']);
   }
 
