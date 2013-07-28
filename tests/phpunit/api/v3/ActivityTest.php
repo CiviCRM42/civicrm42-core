@@ -181,7 +181,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
 
   /**
    *  Test civicrm_activity_id() with missing source_contact_id is put with the current user.
-   */
+
   function testActivityCreateWithMissingContactId() {
     $params = array(
       'subject' => 'Make-it-Happen Meeting',
@@ -196,7 +196,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
 
     $result = $this->callAPISuccess('activity', 'create', $params);
   }
-
+   */
   /**
    *  Test civicrm_activity_id() with non-numeric source_contact_id
    */
@@ -812,7 +812,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
   /**
    *  Test civicrm_activity_get() with a good activity ID which
    *  has associated custom data
-   */
+
   function testActivityGetContact_idCustom() {
     $ids = $this->entityCustomGroupWithSingleFieldCreate(__FUNCTION__, __FILE__);
 
@@ -838,7 +838,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
     $this->assertEquals('test activity type id', $result['values'][0]['subject'], 'In line ' . __LINE__);
     $this->assertEquals($result['values'][0]['id'], $result['id'], 'in line ' . __LINE__);
   }
-
+*/
   /**
    * check activity deletion with empty params
    */
@@ -1253,7 +1253,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
 
   /**
    *  Test civicrm_activities_contact_get()
-   */
+
   function testActivitiesContactGet() {
     $activity = civicrm_api('activity', 'create', $this->_params);
     $activity2 = civicrm_api('activity', 'create', $this->_params2);
@@ -1269,6 +1269,7 @@ class api_v3_ActivityTest extends CiviUnitTestCase {
     $this->assertEquals('Test activity type', $result['values'][$activity['id']]['activity_name'], 'In line ' . __LINE__);
     $this->assertEquals('Test activity type', $result['values'][$activity2['id']]['activity_name'], 'In line ' . __LINE__);
   }
+   */
   /*
  * test chained Activity format
  */

@@ -68,7 +68,7 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
 
     $this->assertAPISuccess($delete);
   }
-
+/*
   public function testCreatePriceFieldValue() {
     $result = $this->callAPIAndDocument($this->_entity, 'create', $this->_params, __FUNCTION__, __FILE__);
     $this->id = $result['id'];
@@ -76,7 +76,7 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
     $this->assertNotNull($result['values'][$result['id']]['id'], 'In line ' . __LINE__);
     $this->getAndCheck($this->_params, $result['id'], $this->_entity);
   }
-
+*/
   public function testGetBasicPriceFieldValue() {
     $createResult = civicrm_api($this->_entity, 'create', $this->_params);
     $this->id = $createResult['id'];
@@ -106,11 +106,11 @@ class api_v3_PriceFieldValueTest extends CiviUnitTestCase {
       ));
     $this->assertEquals($startCount, $endCount, 'In line ' . __LINE__);
   }
-
+/*
   public function testGetFieldsPriceFieldValue() {
     $result = $this->callAPISuccess($this->_entity, 'getfields', array('version' => $this->_apiversion, 'action' => 'create'));
     $this->assertEquals(1, $result['values']['max_value']['type']);
   }
-
+*/
 }
 
