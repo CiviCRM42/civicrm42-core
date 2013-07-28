@@ -244,6 +244,7 @@ function civicrm_api3($entity, $action, $params){
   if($result['is_error']){
     throw new CiviCRM_API3_Exception($result['error_message'], CRM_Utils_Array::value('error_code', $result, 'undefined'), $result);
   }
+  return $result;
 }
 
 /**
