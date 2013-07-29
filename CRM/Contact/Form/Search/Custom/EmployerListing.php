@@ -34,7 +34,9 @@
  */
 class CRM_Contact_Form_Search_Custom_EmployerListing implements CRM_Contact_Form_Search_Interface {
 
-  protected $_formValues; function __construct(&$formValues) {
+  protected $_formValues;
+
+  function __construct(&$formValues) {
     $this->_formValues = $formValues;
 
     /**
@@ -95,17 +97,20 @@ class CRM_Contact_Form_Search_Custom_EmployerListing implements CRM_Contact_Form
    * Construct the search query
    */
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-
-    // SELECT clause must include contact_id as an alias for civicrm_contact.id
-    $select = "
+    if ($justIDs) {
+      $select = "cInd.id as contact_id";
+    }
+    else {
+      $select = "
             DISTINCT cInd.id as contact_id,
             cInd.sort_name as sort_name,
             indSP.name as indState,
             cEmp.sort_name as employer,
             empSP.name as empState
             ";
+    }
 
     $from = $this->from();
 
@@ -153,7 +158,7 @@ class CRM_Contact_Form_Search_Custom_EmployerListing implements CRM_Contact_Form
             civicrm_contact cInd
             LEFT JOIN civicrm_address indAddress ON ( indAddress.contact_id = cInd.id AND
             indAddress.is_primary       = 1 )
-            LEFT JOIN civicrm_state_province indSP ON indSP.id = indAddress.state_province_id,           
+            LEFT JOIN civicrm_state_province indSP ON indSP.id = indAddress.state_province_id,
             civicrm_contact cEmp
             LEFT JOIN civicrm_address empAddress ON ( empAddress.contact_id = cEmp.id AND
             empAddress.is_primary       = 1 )
@@ -217,7 +222,7 @@ class CRM_Contact_Form_Search_Custom_EmployerListing implements CRM_Contact_Form
     return implode(' AND ', $clauses);
   }
 
-  /* 
+  /*
      * Functions below generally don't need to be modified
      */
   function count() {

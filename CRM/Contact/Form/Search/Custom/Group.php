@@ -418,7 +418,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
                   SELECT  DISTINCT civicrm_entity_tag.entity_id
                   FROM civicrm_entity_tag, civicrm_contact
                   WHERE
-                     civicrm_entity_tag.entity_table = 'civicrm_contact' AND
+                     civicrm_contact.id = civicrm_entity_tag.entity_id AND
                      civicrm_contact.id = civicrm_entity_tag.entity_id AND
                      civicrm_entity_tag.tag_id IN( {$xTags})";
 

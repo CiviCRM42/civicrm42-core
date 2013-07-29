@@ -126,12 +126,22 @@ class CRM_Contact_Form_Search_Custom_Basic extends CRM_Contact_Form_Search_Custo
     return $this->_query->searchQuery(0, 0, NULL, TRUE);
   }
 
-  function all($offset = 0, $rowCount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+  function all(
+    $offset = 0,
+    $rowCount = 0,
+    $sort = NULL,
+    $includeContactIDs = FALSE,
+    $justIDs = FALSE
   ) {
-    return $this->_query->searchQuery($offset, $rowCount, $sort,
-      FALSE, $includeContactIDs,
-      FALSE, FALSE, TRUE
+    return $this->_query->searchQuery(
+      $offset,
+      $rowCount,
+      $sort,
+      FALSE,
+      $includeContactIDs,
+      FALSE,
+      $justIDs,
+      TRUE
     );
   }
 

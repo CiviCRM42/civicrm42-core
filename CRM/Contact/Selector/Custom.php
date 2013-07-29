@@ -39,7 +39,7 @@
  * results of advanced search options.
  *
  */
-class CRM_Contact_Selector_Custom extends CRM_Core_Selector_Base implements CRM_Core_Selector_API {
+class CRM_Contact_Selector_Custom extends CRM_Contact_Selector {
 
   /**
    * This defines two actions- View and Edit.
@@ -115,14 +115,17 @@ class CRM_Contact_Selector_Custom extends CRM_Core_Selector_Base implements CRM_
    *
    * @return CRM_Contact_Selector
    * @access public
-   */ function __construct($customSearchClass,
+   */
+  function __construct(
+    $customSearchClass,
     $formValues        = NULL,
     $params            = NULL,
     $returnProperties  = NULL,
     $action            = CRM_Core_Action::NONE,
     $includeContactIds = FALSE,
     $searchChildGroups = TRUE,
-    $searchContext     = 'search'
+    $searchContext     = 'search',
+    $contextMenu       = NULL
   ) {
     $this->_customSearchClass = $customSearchClass;
     $this->_formValues = $formValues;
@@ -334,6 +337,9 @@ class CRM_Contact_Selector_Custom extends CRM_Core_Selector_Base implements CRM_
         $rows[] = $row;
       }
     }
+
+    $this->buildPrevNextCache($sort);
+
     return $rows;
   }
 

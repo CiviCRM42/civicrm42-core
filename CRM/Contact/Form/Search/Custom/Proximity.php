@@ -165,18 +165,22 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-
-    $selectClause = "
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "
 contact_a.id           as contact_id    ,
 contact_a.sort_name    as sort_name     ,
 address.street_address as street_address,
 address.city           as city          ,
 address.postal_code    as postal_code   ,
 state_province.name    as state_province,
-country.name           as country       
+country.name           as country
 ";
+    }
 
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,

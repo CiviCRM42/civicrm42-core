@@ -128,7 +128,7 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
     //redirect if custom group not select in search criteria
     if (!CRM_Utils_Array::value('custom_group', $this->_formValues)) {
@@ -139,11 +139,16 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
         )
       );
     }
-    $selectClause = "
-contact_a.id           as contact_id  ,
-contact_a.contact_type as contact_type,
-contact_a.sort_name    as sort_name,
-";
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "
+  contact_a.id           as contact_id  ,
+  contact_a.contact_type as contact_type,
+  contact_a.sort_name    as sort_name,
+  ";
+    }
 
     $customClauses = array();
     foreach ($this->_tables as $tableName => $fields) {
@@ -172,12 +177,12 @@ contact_a.sort_name    as sort_name,
 
     // This prevents duplicate rows when contacts have more than one tag any you select "any tag"
     if ($this->_tag) {
-      $from .= " LEFT JOIN civicrm_entity_tag t ON (t.entity_table='civicrm_contact' 
+      $from .= " LEFT JOIN civicrm_entity_tag t ON (t.entity_table='civicrm_contact'
                        AND contact_a.id = t.entity_id)";
     }
 
     if ($this->_group) {
-      $from .= " LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id 
+      $from .= " LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id
                        AND cgc.status = 'Added')";
     }
 

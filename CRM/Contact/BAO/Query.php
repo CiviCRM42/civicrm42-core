@@ -3733,7 +3733,7 @@ civicrm_relationship.start_date > {$today}
    * @param boolean  $count    is this a count only query ?
    * @param boolean  $includeContactIds should we include contact ids?
    * @param boolean  $sortByChar if true returns the distinct array of first characters for search results
-   * @param boolean  $groupContacts if true, use a single mysql group_concat statement to get the contact ids
+   * @param boolean  $groupContacts if true, return only the contact ids
    * @param boolean  $returnQuery   should we return the query as a string
    * @param string   $additionalWhereClause if the caller wants to further restrict the search (used for components)
    * @param string   $additionalFromClause should be clause with proper joins, effective to reduce where clause load.
