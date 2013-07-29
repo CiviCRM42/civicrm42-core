@@ -228,8 +228,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @access public
    *
    */
-  static
-  function &links($context = NULL, $contextMenu = NULL, $key = NULL) {
+  static function &links($context = NULL, $contextMenu = NULL, $key = NULL) {
     $extraParams = ($key) ? "&key={$key}" : NULL;
     $searchContext = ($context) ? "&context=$context" : NULL;
 
@@ -907,10 +906,18 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
 
     // lets fill up the prev next cache here, so view can scroll thru
-    $sql = $this->_query->searchQuery(0, 0, $sort,
-      FALSE, FALSE,
-      FALSE, TRUE, TRUE, NULL
-    );
+    if (is_a($this, 'CRM_Contact_Selector_Custom')) {
+      $sql = $this->_search->contactIDs(0, 0, $sort, TRUE);
+      $replaceSQL = "SELECT contact_a.id as contact_id";
+    }
+    else {
+      $sql = $this->_query->searchQuery(
+        0, 0, $sort,
+        FALSE, FALSE,
+        FALSE, TRUE, TRUE, NULL
+      );
+      $replaceSQL = "SELECT contact_a.id as id";
+    }
 
     // CRM-9096
     // due to limitations in our search query writer, the above query does not work
@@ -925,8 +932,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
 SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
 ";
-    $replaceSQL = "SELECT contact_a.id as id";
-
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
 

@@ -97,12 +97,12 @@ class CRM_Contact_Form_Search_Custom_ContributionAggregate implements CRM_Contac
    * Construct the search query
    */
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $onlyIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
 
     // SELECT clause must include contact_id as an alias for civicrm_contact.id
-    if ($onlyIDs) {
-      $select = "DISTINCT contact_a.id as contact_id";
+    if ($justIDs) {
+      $select = "contact_a.id as contact_id";
     }
     else {
       $select = "
@@ -129,7 +129,7 @@ GROUP BY contact_a.id
 $having
 ";
     //for only contact ids ignore order.
-    if (!$onlyIDs) {
+    if (!$justIDs) {
       // Define ORDER BY for query in $sort, with default value
       if (!empty($sort)) {
         if (is_string($sort)) {
@@ -213,7 +213,7 @@ civicrm_contact AS contact_a
     return implode(' AND ', $clauses);
   }
 
-  /* 
+  /*
      * Functions below generally don't need to be modified
      */
   function count() {
