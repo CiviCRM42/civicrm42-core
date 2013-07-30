@@ -160,6 +160,7 @@ class api_v3_SyntaxConformanceAllEntitiesTest extends CiviUnitTestCase {
       'PriceFieldValue',
       'PledgePayment',
       'Setting',
+      'ContributionPage',
     );
     if ($sequential === TRUE) {
       return $entitiesWithout;
