@@ -56,6 +56,12 @@ define('API_LATEST_VERSION', 3);
  */
 class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
 
+
+  /**
+   * api version - easier to override than just a defin
+   */
+  protected $_apiversion = API_LATEST_VERSION;
+
   /**
    *  Database has been initialized
    *
@@ -580,22 +586,59 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
     return $this->assertInternalType($expected, $actual, $message);
   }
 
-/**
-* This function exists to wrap api functions
-* so we can ensure they succeed & throw exceptions without litterering the test with checks
-* @param string $entity
-* @param string $action
-* @param array $params
-* @param string $function - pass this in to create a generated example
-* @param string $file - pass this in to create a generated example
-*/
-  function callAPISuccess($entity, $action, $params) {
+  /**
+   * check that a deleted item has been deleted
+   */
+  function assertAPIDeleted($entity, $id) {
+    $this->callAPISuccess($entity, 'getcount', array('id' => $id), 0);
+  }
+
+
+  /**
+   * check that api returned 'is_error' => 1
+   * else provide full message
+   * @param array $apiResult api result
+   * @param string $prefix extra test to add to message
+   */
+  function assertAPIArrayComparison($result, $expected, $valuesToExclude = array(), $prefix = '') {
+    $valuesToExclude = array_merge($valuesToExclude, array('debug', 'xdebug', 'sequential'));
+    foreach ($valuesToExclude as $value) {
+      if(isset($result[$value])) {
+        unset($result[$value]);
+      }
+      if(isset($expected[$value])) {
+        unset($expected[$value]);
+      }
+    }
+    $this->assertEquals($result, $expected, "api result array comparison failed " . $prefix . print_r($result, TRUE) . ' was compared to ' . print_r($expected, TRUE));
+  }
+
+  /**
+   * This function exists to wrap api functions
+   * so we can ensure they succeed & throw exceptions without litterering the test with checks
+   * @param string $entity
+   * @param string $action
+   * @param array $params
+   * @param mixed $checkAgainst optional value to check result against, implemented for getvalue,
+   *   getcount, getsingle. Note that for getvalue the type is checked rather than the value
+   *   for getsingle the array is compared against an array passed in - the id is not compared (for
+   *   better or worse )
+   */
+  function callAPISuccess($entity, $action, $params, $checkAgainst = NULL) {
     $params = array_merge(array(
-        'version' => API_LATEST_VERSION,
+        'version' => $this->_apiversion,
         'debug' => 1,
       ),
       $params
     );
+    switch (strtolower($action)) {
+      case 'getvalue' :
+        return $this->callAPISuccessGetValue($entity, $params, $checkAgainst);
+      case 'getsingle' :
+        return $this->callAPISuccessGetSingle($entity, $params, $checkAgainst);
+      case 'getcount' :
+          return $this->callAPISuccessGetCount($entity, $params, $checkAgainst);
+    }
     $result = civicrm_api($entity, $action, $params);
     $this->assertAPISuccess($result, "Failure in api call for $entity $action");
     return $result;
@@ -632,6 +675,36 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
     }
     return $result;
   }
+
+  /**
+   * This function exists to wrap api getsingle function & check the result
+   * so we can ensure they succeed & throw exceptions without litterering the test with checks
+   * @param string $entity
+   * @param array $params
+   * @param array $checkAgainst - array to compare result against
+   * - boolean
+   * - integer
+   * - double
+   * - string
+   * - array
+   * - object
+   */
+  function callAPISuccessGetSingle($entity, $params, $checkAgainst = NULL) {
+    $params += array(
+      'version' => $this->_apiversion,
+      'debug' => 1,
+    );
+    $result = civicrm_api($entity, 'getsingle', $params);
+    if(!is_array($result) || !empty($result['is_error']) || isset($result['values'])) {
+      throw new Exception('Invalid getsingle result' . print_r($result, TRUE));
+    }
+    if($checkAgainst){
+      // @todo - have gone with the fn that unsets id? should we check id?
+      $this->checkArrayEquals($result, $checkAgainst);
+    }
+    return $result;
+  }
+
   /**
 * This function exists to wrap api functions
 * so we can ensure they succeed, generate and example & throw exceptions without litterering the test with checks
@@ -2276,8 +2349,84 @@ AND    ( TABLE_NAME LIKE 'civicrm_value_%' )
       }
     }
   }
-}
+
+  /**
+   * Temporarily replace the singleton extension with a different one
+   */
+  function setExtensionSystem(CRM_Extension_System $system) {
+    if ($this->origExtensionSystem == NULL) {
+      $this->origExtensionSystem = CRM_Extension_System::singleton();
+    }
+    CRM_Extension_System::setSingleton($this->origExtensionSystem);
+  }
+
+  function unsetExtensionSystem() {
+    if ($this->origExtensionSystem !== NULL) {
+      CRM_Extension_System::setSingleton($this->origExtensionSystem);
+      $this->origExtensionSystem = NULL;
+    }
+  }
+
+  function financialAccountDelete($name) {
+    $financialAccount = new CRM_Financial_DAO_FinancialAccount();
+    $financialAccount->name = $name;
+    if($financialAccount->find(TRUE)) {
+      $entityFinancialType = new CRM_Financial_DAO_EntityFinancialAccount();
+      $entityFinancialType->financial_account_id = $financialAccount->id;
+      $entityFinancialType->delete();
+      $financialAccount->delete();
+    }
+  }
+
+  /**
+   * Use $ids as an instruction to do test cleanup
+   */
+  function deleteFromIDSArray() {
+    foreach ($this->ids as $entity => $ids) {
+      foreach ($ids as $id) {
+        $this->callAPISuccess($entity, 'delete', array('id' => $id));
+      }
+    }
+  }
+
+/**
+ * Create an instance of the paypal processor
+ * @todo this isn't a great place to put it - but really it belongs on a class that extends
+ * this parent class & we don't have a structure for that yet
+ * There is another function to this effect on the PaypalPro test but it appears to be silently failing
+ * & the best protection agains that is the functions this class affords
+ */
+ function paymentProcessorCreate($params = array()) {
+   $params = array_merge(array(
+     'name' => 'demo',
+     'domain_id' => CRM_Core_Config::domainID(),
+     'payment_processor_type_id' => 'PayPal',
+     'is_active' => 1,
+     'is_default' => 0,
+     'is_test' => 1,
+     'user_name' => 'sunil._1183377782_biz_api1.webaccess.co.in',
+     'password' => '1183377788',
+     'signature' => 'APixCoQ-Zsaj-u3IH7mD5Do-7HUqA9loGnLSzsZga9Zr-aNmaJa3WGPH',
+     'url_site' => 'https://www.sandbox.paypal.com/',
+     'url_api' => 'https://api-3t.sandbox.paypal.com/',
+     'url_button' => 'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif',
+     'class_name' => 'Payment_PayPalImpl',
+     'billing_mode' => 3,
+     ),
+   $params);
+   if(!is_numeric($params['payment_processor_type_id'])) {
+     // really the api should handle this through getoptions but it's not exactly api call so lets just sort it
+     //here
+     $params['payment_processor_type_id'] = $this->callAPISuccess('payment_processor_type', 'getvalue', array(
+       'name' => $params['payment_processor_type_id'],
+       'return' => 'id',
+       ), 'integer');
+   }
+   $result = $this->callAPISuccess('payment_processor', 'create', $params);
+   return $result['id'];
+ }
 
 function CiviUnitTestCase_fatalErrorHandler($message) {
   throw new Exception("{$message['message']}: {$message['code']}");
+}
 }
