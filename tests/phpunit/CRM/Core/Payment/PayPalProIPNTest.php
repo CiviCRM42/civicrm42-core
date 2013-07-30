@@ -104,6 +104,40 @@ class CRM_Core_Payment_PaypalProIPNTest extends CiviUnitTestCase {
   }
 
   /**
+   * test IPN response updates contribution_recur & contribution for first & second contribution
+   * @todo I was unable to get this to finish without a fatal error (trying to insert the same line items twice)
+   * If that is fixed then the try catch should be removed & tests added to check that
+   */
+  function testIPNPaymentExpressRecurPayment() {
+    $this->setupPaymentProcessorTransaction();
+    $paypalIPN = new CRM_Core_Payment_PayPalProIPN($this->getFirstPaypalExpressTransation());
+    $paypalIPN->main();
+    $contribution = $this->callAPISuccess('contribution', 'getsingle', array('id' => $this->_contributionID));
+    $this->assertEquals(1, $contribution['contribution_status_id']);
+    $this->assertEquals('03W6561902100533N', $contribution['trxn_id']);
+    // source gets set by processor
+    $this->assertTrue(substr($contribution['contribution_source'], 0, 20) == "Online Contribution:");
+    $contributionRecur = $this->callAPISuccess('contribution_recur', 'getsingle', array('id' => $this->_contributionRecurID));
+    $this->assertEquals(5, $contributionRecur['contribution_status_id']);
+
+    $paypalIPN = new CRM_Core_Payment_PayPalProIPN($this->getPaypalExpressSubsequentTransaction());
+    $paypalIPN->main();
+    $contribution = $this->callAPISuccess('contribution', 'get', array('contribution_recur_id' => $this->_contributionRecurID, 'sequential' => 1));
+    $this->assertEquals(2, $contribution['count']);
+    $this->assertEquals('secondone', $contribution['values'][1]['trxn_id']);
+
+    try{
+      $paypalIPN = new CRM_Core_Payment_PayPalProIPN($this->getPaypalExpressSubsequentTransaction());
+      $paypalIPN->main();
+    }
+    catch(Exception $e) {
+      $this->assertEquals($e->getMessage(), 'This transaction has already been processed');
+      return;
+    }
+    $this->fail('we should have failed to insert twice');
+  }
+
+  /**
    * check a payment express IPN call does not throw any errors
    * At this stage nothing it supposed to happen so it's a pretty blunt test
    * but at least it should be e-notice free
@@ -131,7 +165,7 @@ class CRM_Core_Payment_PaypalProIPNTest extends CiviUnitTestCase {
       $contribution = $this->callAPISuccess('contribution', 'getsingle', array('id' => $this->_contributionID));
       // no change
       $this->assertEquals(2, $contribution['contribution_status_id']);
-      $this->assertEquals('Payment Express IPNS not currently handled', $e->getMessage());
+      $this->assertEquals('Paypal IPNS not handled other than recurring_payments', $e->getMessage());
       return;
     }
     $this->fail('The Paypal Express IPN should have caused an exception');
@@ -212,10 +246,47 @@ class CRM_Core_Payment_PaypalProIPNTest extends CiviUnitTestCase {
   }
 
   /**
+   * This is the first the DB will know about this....
+   */
+
+  function getPaypalExpressProfileCreateNotification() {
+    return array(
+      'amount' => '5.00',
+      'initial_payment_amount' => '0.00',
+      'profile_status' => 'Active',
+      'payer_id' => 'YCPE7XZYARJWJ',
+      'product_type' => '1',
+      'ipn_track_id' => 'e57q77836dadb',
+      'outstanding_balance' => '0.00',
+      'shipping' => '0.00',
+      'charset' => 'windows-1252',
+      'period_type' => ' Regular',
+      'currency_code' => 'USD',
+      'verify_sign' => 'An5ns4Puh7MWOdW4ErPOKNH4qi4-AMNgQTca76O007ppuknuGFXuWGoh',
+      'payment_cycle' => 'Monthly',
+      'txn_type' => 'recurring_payment_profile_created',
+      'payer_status' => 'unverified',
+      'first_name' => 'Tatum',
+      'product_name' => '5 Per 1 month',
+      'amount_per_cycle' => '5.00',
+      'rp_invoice_id' => 'i=4bbe5cca1d7895c36b123c08abc21637&m=&c=&r=&b=&p=2',
+      'last_name' => "O'Neal",
+      'time_created' => '14:55:20 Jul 24, 2013 PDT',
+      'resend' => 'true',
+      'notify_version' => '3.7',
+      'recurring_payment_id' => 'I-PQWXJAS1M9UX',
+      'payer_email' => 'tatum@hollywood.com',
+      'receiver_email' => 'nowhere@civicrm.org',
+      'next_payment_date' => '03:00:00 Jul 24, 2013 PDT',
+      'tax' => '0.00',
+      'residence_country' => 'US'
+    );
+  }
+  /**
    * Get IPN results from follow on IPN transations
    * @return multitype:string
    */
-  function getSubsequentPaypalExpressTransation() {
+  function getFirstPaypalExpressTransation() {
     return array(
       'mc_gross' => '5.00',
       'period_type' => ' Regular',
@@ -268,6 +339,16 @@ class CRM_Core_Payment_PaypalProIPNTest extends CiviUnitTestCase {
       'ipn_track_id' => '912e5010eb5a6'
     );
   }
+
+  function getPaypalExpressSubsequentTransaction() {
+    return array_merge($this->getFirstPaypalExpressTransation(),
+      array(
+       'txn_id' => 'secondone',
+       'time_created' => '02:02:25 May 15, 2013 PDT')
+     );
+    ;
+  }
+
   /**
    *
    */
