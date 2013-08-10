@@ -357,7 +357,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
 
     foreach ($names as $name => $classPath) {
       require_once (str_replace('_', DIRECTORY_SEPARATOR, $classPath) . '.php');
-      $action = &new $classPath($this->_stateMachine);
+      $action = new $classPath($this->_stateMachine);
       $this->addAction($name, $action);
     }
 
