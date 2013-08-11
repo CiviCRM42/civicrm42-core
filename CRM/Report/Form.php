@@ -2386,6 +2386,38 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
   }
 
+
+  function storeResultSet() {
+    $this->_storeResultSet = TRUE;
+  }
+
+  function getResultSet() {
+    return $this->_resultSet;
+  }
+
+  /*
+   * Get Template file name - use default form template if a specific one has not been set up for this report
+   *
+   */
+  function getTemplateFileName(){
+    $defaultTpl = parent::getTemplateFileName();
+    $template   = CRM_Core_Smarty::singleton();
+    if (!$template->template_exists($defaultTpl)) {
+      $defaultTpl = 'CRM/Report/Form.tpl';
+    }
+    return $defaultTpl;
+  }
+
+  /*
+   * Compile the report content
+   *
+   *  Although this function is super-short it is useful to keep separate so it can be over-ridden by report classes.
+   */
+  function compileContent(){
+    $templateFile = $this->getHookedTemplateFileName();
+    return $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
+  }
+
   function postProcess() {
     // get ready with post process params
     $this->beginPostProcess();
