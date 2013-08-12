@@ -232,7 +232,7 @@ class CRM_Core_Extensions_Extension {
    * @param bool $removeFiles whether to remove PHP source tree for the extension
    * @return boolean Whether all tasks completed successfully.
    */
-  public function uninstall($removeFiles = TRUE) {
+  public function uninstall($removeFiles = FALSE) {
     if ($this->type == 'payment' && $this->status != 'missing') {
       $this->_runPaymentHook('uninstall');
     }
