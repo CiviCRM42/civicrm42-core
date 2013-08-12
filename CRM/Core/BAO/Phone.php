@@ -69,28 +69,14 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
    */
   static
   function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'Phone', CRM_Utils_Array::value('id', $params), $params);
+
     $phone = new CRM_Core_DAO_Phone();
-
     $phone->copyValues($params);
-    
-    // CRM-11006 move calls to pre hook from create function to add function
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'Phone', $params['id'], $params);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'Phone', NULL, $params);
-    }
-    
     $phone->save();
-    
-    //CRM-11006 move calls to pre hook from create function to add function
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'Phone', $phone->id, $phone);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Phone', $phone->id, $phone);
-    }
 
+    CRM_Utils_Hook::post($hook, 'Phone', $phone->id, $phone);
     return $phone;
   }
 
