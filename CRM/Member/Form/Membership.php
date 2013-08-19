@@ -1052,7 +1052,10 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
     if (!$priceSetId = CRM_Utils_Array::value('price_set_id', $formValues)) {
       CRM_Member_BAO_Membership::createLineItems($this, $formValues['membership_type_id'], $priceSetId);
     }
-
+    $isQuickConfig = 0;
+    if ($this->_priceSetId && CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', $this->_priceSetId, 'is_quick_config')) {
+      $isQuickConfig = 1;
+    }
     if ($priceSetId) {
       CRM_Price_BAO_Set::processAmount($this->_priceSet['fields'],
         $this->_params, $lineItem[$priceSetId]);
@@ -1220,7 +1223,7 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
         $params['total_amount'] = CRM_Utils_Array::value('total_amount', $formValues, 0);
       }
 
-      if ($priceSetId) {
+      if ($priceSetId && !$isQuickConfig) {
         $params['contribution_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set',
           $priceSetId,
           'contribution_type_id'
