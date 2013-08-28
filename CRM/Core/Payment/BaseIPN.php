@@ -35,10 +35,47 @@
 class CRM_Core_Payment_BaseIPN {
 
   static $_now = NULL;
+
+  /**
+   * Input parameters from payment processor. Store these so that
+   * the code does not need to keep retrieving from the http request
+   * @var array
+   */
+  protected $_inputParameters = array();
+
+  /**
+   * Constructor
+   */
   function __construct() {
     self::$_now = date('YmdHis');
   }
 
+  /**
+   * Store input array on the class
+   * @param array $parameters
+   * @throws CRM_Core_Exceptions
+   */
+  function setInputParameters($parameters) {
+    if(!is_array($parameters)) {
+      throw new CRM_Core_Exceptions('Invalid input parameters');
+    }
+    $this->_inputParameters = $parameters;
+  }
+  /**
+   * Validate incoming data. This function is intended to ensure that incoming data matches
+   * It provides a form of pseudo-authentication - by checking the calling fn already knows
+   * the correct contact id & contribution id (this can be problematic when that has changed in
+   * the meantime for transactions that are delayed & contacts are merged in-between. e.g
+   * Paypal allows you to resend Instant Payment Notifications if you, for example, moved site
+   * and didn't update your IPN URL.
+   *
+   * @param array $input interpreted values from the values returned through the IPN
+   * @param array $ids more interpreted values (ids) from the values returned through the IPN
+   * @param array $objects an empty array that will be populated with loaded object
+   * @param boolean $required boolean Return FALSE if the relevant objects don't exist
+   * @param integer $paymentProcessorID Id of the payment processor ID in use
+   * @return boolean
+   */
   function validateData(&$input, &$ids, &$objects, $required = TRUE, $paymentProcessorID = NULL) {
 
     // make sure contact exists and is valid
@@ -120,7 +157,7 @@ class CRM_Core_Payment_BaseIPN {
     try {
       $success = $contribution->loadRelatedObjects($input, $ids, $required);
     }
-    catch(Exception$e) {
+    catch(Exception $e) {
       if (CRM_Utils_Array::value('log_error', $error_handling)) {
         CRM_Core_Error::debug_log_message($e->getMessage());
       }
@@ -497,7 +534,6 @@ LIMIT 1;";
         'payment_processor' => $paymentProcessor,
         'trxn_id' => $contribution->trxn_id,
       );
-
       $trxn = CRM_Core_BAO_FinancialTrxn::create($trxnParams);
     }
 
