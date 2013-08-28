@@ -143,9 +143,10 @@ class CRM_Contact_Form_Task_LabelCommon {
     }
     // fix for CRM-2613
     $params[] = array('is_deceased', '=', 0, 0, 0);
+    $locations = civicrm_api('phone', 'getoptions', array('field' => 'location_type_id', 'version' => 3));
 
     if ($locationTypeID) {
-      $locType          = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
+      $locType          = $locations;
       $locName          = $locType[$locationTypeID];
       $location         = array('location' => array("{$locName}" => $addressReturnProperties));
       $returnProperties = array_merge($returnProperties, $location);

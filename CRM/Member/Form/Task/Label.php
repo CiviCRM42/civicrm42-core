@@ -68,9 +68,10 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
 
 
     // add select for Location Type
+    $locations = civicrm_api('phone', 'getoptions', array('field' => 'location_type_id', 'version' => 3));
     $this->addElement('select', 'location_type_id', ts('Select Location'),
       array(
-        '' => ts('Primary')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'), TRUE
+        '' => ts('Primary')) + $locations, TRUE
     );
     $this->addElement('checkbox', 'per_membership', ts('Print one label per Membership (rather than per contact)'));
 
