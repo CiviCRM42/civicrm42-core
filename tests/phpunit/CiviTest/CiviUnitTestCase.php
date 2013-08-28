@@ -771,9 +771,8 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
    *
    * @return int    id of Individual created
    */
-  function individualCreate($params = NULL) {
-    if ($params === NULL) {
-      $params = array(
+  function individualCreate($params = array()) {
+    $params = array_merge(array(
         'first_name' => 'Anthony',
         'middle_name' => 'J.',
         'last_name' => 'Anderson',
@@ -781,9 +780,8 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
         'suffix_id' => 3,
         'email' => 'anthony_anderson@civicrm.org',
         'contact_type' => 'Individual',
-      );
-    }
-    $params['version'] = API_LATEST_VERSION;
+      ), $params);
+
     return $this->_contactCreate($params);
   }
 
@@ -814,16 +812,15 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
    * @return int    id of Household created
    */
   private function _contactCreate($params) {
-    $result = civicrm_api('Contact', 'create', $params);
+    $result = $this->callAPISuccess('contact', 'create', $params);
     if (CRM_Utils_Array::value('is_error', $result) ||
-      (!CRM_Utils_Array::value('contact_id', $result) &&
-        !CRM_Utils_Array::value('id', $result)
-      )
+      !CRM_Utils_Array::value('id', $result)
     ) {
-      throw new Exception('Could not create test contact, with message: ' . CRM_Utils_Array::value('error_message', $result));
+      throw new Exception('Could not create test contact, with message: ' . CRM_Utils_Array::value('error_message', $result) . "\nBacktrace:" . CRM_Utils_Array::value('trace', $result));
     }
-    return isset($result['contact_id']) ? $result['contact_id'] : CRM_Utils_Array::value('id', $result);
+    return $result['id'];
   }
+
 
   function contactDelete($contactID) {
 
