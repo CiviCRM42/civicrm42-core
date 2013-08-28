@@ -72,7 +72,10 @@ class api_v3_MembershipTest extends CiviUnitTestCase {
   function tearDown() {
     $this->quickCleanup(array(
       'civicrm_membership',
-      'civicrm_membership_payment')
+      'civicrm_membership_payment',
+      'civicrm_membership_log',
+      ),
+      TRUE
     );
     $this->membershipStatusDelete($this->_membershipStatusID);
     $this->membershipTypeDelete(array('id' => $this->_membershipTypeID));
