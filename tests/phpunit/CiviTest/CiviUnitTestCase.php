@@ -772,6 +772,9 @@ class CiviUnitTestCase extends PHPUnit_Extensions_Database_TestCase {
    * @return int    id of Individual created
    */
   function individualCreate($params = array()) {
+    if($params == NULL) {
+      $params = array();
+    }
     $params = array_merge(array(
         'first_name' => 'Anthony',
         'middle_name' => 'J.',
