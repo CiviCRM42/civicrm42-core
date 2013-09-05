@@ -1182,4 +1182,18 @@ abstract class CRM_Utils_Hook {
     );
   }
 
+  /**
+   * Modify or replace the Mailer object used for outgoing mail.
+   *
+   * @param object $mailer
+   *   The default mailer produced by normal configuration; a PEAR "Mail" class (like those returned by Mail::factory)
+   * @param string $driver
+   *   The type of the default mailer (eg "smtp", "sendmail", "mock", "CRM_Mailing_BAO_Spool")
+   * @param array $params
+   *   The default mailer config options
+   * @see Mail::factory
+   */
+  static function hook_civicrm_alterMailer(&$mailer, $driver, $params) {
+    return self::singleton()->invoke(3, $mailer, $driver, $params, self::$_nullObject, self::$_nullObject, 'civicrm_alterMailer');
+  } 
 }
