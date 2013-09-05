@@ -1013,10 +1013,18 @@ WHERE  contribution_id = {$this->_id}
       $this->addElement('textarea', 'pcp_personal_note', ts('Personal Note (for Honor Roll)'));
     }
 
-    $dataUrl = CRM_Utils_System::url('civicrm/ajax/rest',
-      "className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&reset=1&context=softcredit&id={$this->_id}",
-      FALSE, NULL, FALSE
-    );
+    // If we have a contact for this contribution, pass cid= to the dataUrl to exclude current contact from autocomplete results
+    if ($this->_contactID) {
+      $dataUrl = CRM_Utils_System::url('civicrm/ajax/rest',
+        "className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&reset=1&context=softcredit&cid={$this->_contactID}",
+        FALSE, NULL, FALSE
+      );
+    } else {
+      $dataUrl = CRM_Utils_System::url('civicrm/ajax/rest',
+        "className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&reset=1&context=softcredit",
+        FALSE, NULL, FALSE
+      );      
+    }
     $this->assign('dataUrl', $dataUrl);
     $this->addElement('text', 'soft_credit_to', ts('Soft Credit To'));
     // Tell tpl to hide Soft Credit field if contribution is linked directly to a PCP Page
