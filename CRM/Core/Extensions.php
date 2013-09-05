@@ -654,7 +654,7 @@ class CRM_Core_Extensions {
    *
    * @return void
    */
-  public function uninstall($id, $key, $removeFiles = TRUE) {
+  public function uninstall($id, $key, $removeFiles = FALSE) {
     $this->populate();
     $e = $this->getExtensions();
     $ext = $e[$key];
