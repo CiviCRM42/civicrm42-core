@@ -130,7 +130,7 @@ class api_v3_ContactTest extends CiviUnitTestCase {
     );
     $contact = civicrm_api('contact', 'create', $params);
     $cid = $contact['id'];
-    
+
     $params = array(
       'id' => $cid,
       'middle_name' => 'foo',
@@ -138,9 +138,9 @@ class api_v3_ContactTest extends CiviUnitTestCase {
     );
     civicrm_api('contact', 'create', $params);
     unset($params['middle_name']);
-    
+
     $contact = civicrm_api('contact', 'get', $params);
-    
+
     $this->assertEquals(array('Student', 'Staff'), $contact['values'][$cid]['contact_sub_type'], "In line " . __LINE__);
   }
 
@@ -1267,6 +1267,25 @@ class api_v3_ContactTest extends CiviUnitTestCase {
 
     // delete the contact
     civicrm_api('contact', 'delete', $contact);
+  }
+
+  /**
+   * Test to check return works OK
+   */
+  function testContactGetReturnValues() {
+    $extraParams = array('nick_name' => 'Bob', 'phone' => '456', 'email' => 'e@mail.com');
+    $contactID = $this->individualCreate($extraParams);
+    //actually it turns out the above doesn't create a phone
+    $phones = $this->callAPISuccess('phone', 'create', array('contact_id' => $contactID, 'phone' => '456',));
+    $result = $this->callAPISuccess('contact', 'getsingle', array('id' => $contactID));
+    foreach ($extraParams as $key => $value) {
+      $this->assertEquals($result[$key], $value);
+    }
+    //now we check they are still returned with 'return' key
+    $result = $this->callAPISuccess('contact', 'getsingle', array('id' => $contactID, 'return' => array_keys($extraParams)));
+    foreach ($extraParams as $key => $value) {
+      $this->assertEquals($result[$key], $value);
+    }
   }
 
   /**
