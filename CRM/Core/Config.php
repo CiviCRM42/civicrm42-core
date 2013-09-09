@@ -113,7 +113,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
    * the handle on the mail handler that we are using
    * @var object
    */
-  private static $_mail = NULL;
+  public static $_mail = NULL;
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -489,12 +489,10 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
   }
 
   /**
-   * retrieve a mailer to send any mail from the applciation
+   * Retrieve a mailer to send any mail from the application
    *
    * @param boolean $persist open a persistent smtp connection, should speed up mailings
-   *
    * @access private
-   *
    * @return object
    */
   static function &getMailer($persist = FALSE) {
@@ -506,7 +504,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
       if (defined('CIVICRM_MAILER_SPOOL') &&
         CIVICRM_MAILER_SPOOL
       ) {
-        self::$_mail = new CRM_Mailing_BAO_Spool();
+        self::$_mail = self::_createMailer('CRM_Mailing_BAO_Spool', array());
       }
       elseif ($mailingInfo['outBound_option'] == 0) {
         if ($mailingInfo['smtpServer'] == '' ||
@@ -538,7 +536,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         // CRM-9349
         $params['persist'] = $persist;
 
-        self::$_mail = Mail::factory('smtp', $params);
+        self::$_mail = self::_createMailer('smtp', $params);
       }
       elseif ($mailingInfo['outBound_option'] == 1) {
         if ($mailingInfo['sendmail_path'] == '' ||
@@ -550,26 +548,44 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         $params['sendmail_path'] = $mailingInfo['sendmail_path'];
         $params['sendmail_args'] = $mailingInfo['sendmail_args'];
 
-        self::$_mail = Mail::factory('sendmail', $params);
+        self::$_mail = self::_createMailer('sendmail', $params);
       }
       elseif ($mailingInfo['outBound_option'] == 3) {
         $params = array();
-        self::$_mail = Mail::factory('mail', $params);
+        self::$_mail = self::_createMailer('mail', array());
       }
       elseif ($mailingInfo['outBound_option'] == 4) {
-        self::$_mail = Mail::factory('mock', $params);
+        self::$_mail = self::_createMailer('mock', array());
       }
       elseif ($mailingInfo['outBound_option'] == 2) {
         CRM_Core_Error::debug_log_message(ts('Outbound mail has been disabled. Click <a href=\'%1\'>Administer CiviCRM >> Global Settings</a> to set the OutBound Email.', array(1 => CRM_Utils_System::url('civicrm/admin/setting', 'reset=1'))));
         CRM_Core_Session::setStatus(ts('Outbound mail has been disabled. Click <a href=\'%1\'>Administer CiviCRM >> Global Settings</a> to set the OutBound Email.', array(1 => CRM_Utils_System::url('civicrm/admin/setting', 'reset=1'))));
       }
-      else{
+      else {
         CRM_Core_Error::debug_log_message(ts('There is no valid SMTP server Setting Or SendMail path setting. Click <a href=\'%1\'>Administer CiviCRM >> Global Settings</a> to set the OutBound Email.', array(1 => CRM_Utils_System::url('civicrm/admin/setting', 'reset=1'))));
         CRM_Core_Session::setStatus(ts('There is no valid SMTP server Setting Or SendMail path setting. Click <a href=\'%1\'>Administer CiviCRM >> Global Settings</a> to set the OutBound Email.', array(1 => CRM_Utils_System::url('civicrm/admin/setting', 'reset=1'))));
         CRM_Core_Error::debug_var('mailing_info', $mailingInfo);
       }
     }
     return self::$_mail;
+  }
+  
+  /**
+   * Create a new instance of a PEAR Mail driver
+   * 
+   * @param string $driver 'CRM_Mailing_BAO_Spool' or a name suitable for Mail::factory()
+   * @param array $params
+   * @return Mail (More specifically, a class which implements the "send()" function)
+   */
+  public static function _createMailer($driver, $params) {
+    if ($driver == 'CRM_Mailing_BAO_Spool') {
+      $mailer = new CRM_Mailing_BAO_Spool($params);
+    }
+    else {
+      $mailer = Mail::factory($driver, $params);
+    }
+    CRM_Utils_Hook::alterMailer($mailer, $driver, $params);
+    return $mailer;
   }
 
   /**
