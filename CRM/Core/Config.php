@@ -536,7 +536,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         // CRM-9349
         $params['persist'] = $persist;
 
-        self::$_mail = self::_createMailer('smtp', array());
+        self::$_mail = self::_createMailer('smtp', $params);
       }
       elseif ($mailingInfo['outBound_option'] == 1) {
         if ($mailingInfo['sendmail_path'] == '' ||
@@ -548,7 +548,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         $params['sendmail_path'] = $mailingInfo['sendmail_path'];
         $params['sendmail_args'] = $mailingInfo['sendmail_args'];
 
-        self::$_mail = self::_createMailer('sendmail', array());
+        self::$_mail = self::_createMailer('sendmail', $params);
       }
       elseif ($mailingInfo['outBound_option'] == 3) {
         $params = array();
