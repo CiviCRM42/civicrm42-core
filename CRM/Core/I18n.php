@@ -64,7 +64,7 @@ class CRM_Core_I18n {
         // CRM-11833 Avoid LC_ALL because of LC_NUMERIC and potential DB error.
         setlocale(LC_TIME, $locale);
         setlocale(LC_MESSAGES, $locale);
-        setlocale(LC_CTYPES, $locale);
+        setlocale(LC_CTYPE, $locale);
 
         bindtextdomain('civicrm', $config->gettextResourceDir);
         bind_textdomain_codeset('civicrm', 'UTF-8');
