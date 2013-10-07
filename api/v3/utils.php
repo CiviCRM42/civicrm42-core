@@ -369,7 +369,7 @@ function _civicrm_api3_get_using_query_object($entity, $params, $additional_opti
   unset($params['id']);
 
   $options = _civicrm_api3_get_options_from_params($params, TRUE);
-print_r($options);
+
   $inputParams = array_merge(
     CRM_Utils_Array::value('input_params', $options, array()),
     CRM_Utils_Array::value('input_params', $additional_options, array())
