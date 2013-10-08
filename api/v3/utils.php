@@ -630,8 +630,9 @@ function _civicrm_api3_get_options_from_params(&$params, $queryObject = false, $
     'limit' => CRM_Utils_Rule::integer($limit) ? $limit : NULL,
     'return' => !empty($returnProperties) ? $returnProperties : NULL,
   );
-  if($options['sort'] && stristr('SELECT', $options['sort'])) {
-    throw new API_Exception('invalid string');
+
+  if($options['sort'] && stristr($options['sort'], 'SELECT')) {
+    throw new API_Exception('invalid string in sort options');
   }
   if (!$queryObject) {
     return $options;
@@ -653,7 +654,7 @@ function _civicrm_api3_get_options_from_params(&$params, $queryObject = false, $
     elseif (in_array($n, $otherVars)) {}
     else{
       $inputParams[$n] = $v;
-      if(stristr('SELECT', $v)) {
+      if($v && !is_array($v) && stristr($v, 'SELECT')) {
         throw new API_Exception('invalid string');
       }
     }
