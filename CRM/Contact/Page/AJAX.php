@@ -690,6 +690,9 @@ WHERE sort_name LIKE '%$name%'";
         $offset = CRM_Utils_Array::value('offset', $_GET, 0);
         $rowCount = CRM_Utils_Array::value('rowcount', $_GET, 20);
 
+        $offset = CRM_Utils_Type::escape($offset, 'Int');
+        $rowCount = CRM_Utils_Type::escape($rowCount, 'Int');
+
         // add acl clause here
         list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
         if ($aclWhere) {
@@ -779,6 +782,9 @@ LIMIT {$offset}, {$rowCount}
     if ($queryString) {
       $offset = CRM_Utils_Array::value('offset', $_GET, 0);
       $rowCount = CRM_Utils_Array::value('rowcount', $_GET, 20);
+
+      $offset = CRM_Utils_Type::escape($offset, 'Int');
+      $rowCount = CRM_Utils_Type::escape($rowCount, 'Int');
 
       // add acl clause here
       list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');

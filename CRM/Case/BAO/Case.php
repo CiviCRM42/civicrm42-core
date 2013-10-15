@@ -1078,7 +1078,9 @@ INNER JOIN  civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_conta
       $orderBy = " ORDER BY overdue_date ASC, display_date DESC, weight DESC";
     }
     else {
-      $orderBy = " ORDER BY {$sortname} {$sortorder}";
+      $sort = "{$sortname} {$sortorder}";
+      $sort = CRM_Utils_Type::escape($sort, 'String');
+      $orderBy = " ORDER BY $sort ";
       if ($sortname != 'display_date') {
         $orderBy .= ', display_date DESC';
       }
