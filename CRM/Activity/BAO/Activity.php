@@ -741,7 +741,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
         }
       }
       elseif (trim($input['sort'])) {
-        $order = " ORDER BY {$input['sort']}";
+        $orderBy = CRM_Utils_Type::escape($input['sort'], 'String');
+        $order = " ORDER BY $orderBy";
       }
     }
 

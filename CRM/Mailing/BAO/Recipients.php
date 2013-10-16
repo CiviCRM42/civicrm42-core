@@ -58,6 +58,9 @@ WHERE  mailing_id = %1
   ) {
     $limitString = NULL;
     if ($limit && $offset !== NULL) {
+      $offset = CRM_Utils_Type::escape($offset, 'Int');
+      $limit = CRM_Utils_Type::escape($limit, 'Int');
+
       $limitString = "LIMIT $offset, $limit";
     }
 
