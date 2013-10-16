@@ -350,7 +350,10 @@ ORDER BY civicrm_contribution_total_amount_sum DESC
       $this->set(CRM_Utils_Pager::PAGE_ID, $pageId);
       $offset = ($pageId - 1) * $rowCount;
 
-      $this->_limit = " LIMIT $offset, " . $rowCount;
+      $offset = CRM_Utils_Type::escape($offset, 'Int');
+      $rowCount = CRM_Utils_Type::escape($rowCount, 'Int');
+
+      $this->_limit = " LIMIT $offset, $rowCount";
     }
   }
 
