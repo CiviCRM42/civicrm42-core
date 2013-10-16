@@ -597,6 +597,7 @@ SELECT name, mail
     if (!$loadUser) {
       return TRUE;
     }
+    global $user;
     //load user, we need to check drupal permissions.
     if ($name) {
       $user = user_authenticate(array('name' => $name, 'pass' => $pass));
@@ -612,7 +613,6 @@ SELECT name, mail
         exit();
       }
       else {
-        global $user;
         $user = $account;
       }
     }
