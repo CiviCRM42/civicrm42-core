@@ -483,6 +483,12 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
         'toEmail' => $email,
       );
 
+      // CRM-13811
+      if ($pageID) {
+        $templatesParams['cc'] = CRM_Utils_Array::value('cc_receipt', $value[$pageID]);
+        $templatesParams['bcc'] = CRM_Utils_Array::value('bcc_receipt', $value[$pageID]);
+      }
+
       if ($recur->id) {
         // in some cases its just recurringNotify() thats called for the first time and these urls don't get set.
         // like in PaypalPro, & therefore we set it here additionally.
