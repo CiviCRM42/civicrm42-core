@@ -60,6 +60,7 @@ class CRM_Contact_BAO_GroupOrganization extends CRM_Contact_DAO_GroupOrganizatio
     }
     $groupOrganization = new CRM_Contact_DAO_GroupOrganization();
     $groupOrganization->copyValues($formatedValues);
+    $groupOrganization->find(TRUE);
     $groupOrganization->save();
     return $groupOrganization;
   }
