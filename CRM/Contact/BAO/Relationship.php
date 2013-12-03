@@ -1426,7 +1426,8 @@ cc.sort_name LIKE '%$name%'";
 
     $contactTypes = array();
     foreach ($contactProfiles as $key => $value) {
-      if (strpos($value, $leftType) !== FALSE) {
+      $groupTypes = CRM_Core_BAO_UFGroup::profileGroups($key);
+      if (in_array($leftType, $groupTypes)) {
         $contactTypes = array($key => $value);
       }
     }
