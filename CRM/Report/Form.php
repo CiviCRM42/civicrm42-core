@@ -390,14 +390,18 @@ class CRM_Report_Form extends CRM_Core_Form {
 
       $this->_aliases[$tableName] = $this->_columns[$tableName]['alias'];
 
+      $daoOrBaoName = NULL;
       // higher preference to bao object
       if (array_key_exists('bao', $table)) {
-        require_once str_replace('_', DIRECTORY_SEPARATOR, $table['bao'] . '.php');
-        eval("\$expFields = {$table['bao']}::exportableFields( );");
+        $daoOrBaoName = $table['bao'];
+        $expFields = $daoOrBaoName::exportableFields( );
       }
-      else {
-        require_once str_replace('_', DIRECTORY_SEPARATOR, $table['dao'] . '.php');
-        eval("\$expFields = {$table['dao']}::export( );");
+      elseif (array_key_exists('dao', $table)){
+        $daoOrBaoName = $table['dao'];
+        $expFields = $daoOrBaoName::export( );
+      }
+      else{
+        $expFields = array();
       }
 
       $doNotCopy = array('required');
