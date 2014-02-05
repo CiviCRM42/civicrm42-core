@@ -72,6 +72,18 @@ class CRM_Utils_Check_Security {
   }
 
   /**
+   * Execute "checkAll"
+   */
+  public function showPeriodicAlerts() {
+    if (CRM_Core_Permission::check('administer CiviCRM')) {
+      $session = CRM_Core_Session::singleton();
+      if ($session->timer('check_' . __CLASS__, self::CHECK_TIMER)) {
+        $this->checkAll();
+      }
+    }
+  }
+
+  /**
    * Run some sanity checks.
    *
    * This could become a hook so that CiviCRM can run both built-in
@@ -84,15 +96,10 @@ class CRM_Utils_Check_Security {
    * @see Drupal's hook_requirements() -
    * https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_requirements
    */
-  public function allChecks() {
-    if (CRM_Core_Permission::check('administer CiviCRM')) {
-      $session = CRM_Core_Session::singleton();
-      if ($session->timer('check_' . __CLASS__, self::CHECK_TIMER)) {
-        CRM_Utils_Check_Security::singleton()->CheckLogFileIsNotAccessible();
-        CRM_Utils_Check_Security::singleton()->CheckUploadsAreNotAccessible();
-        CRM_Utils_Check_Security::singleton()->CheckDirectoriesAreNotBrowseable();
-      }
-    }
+  public function checkAll() {
+    CRM_Utils_Check_Security::singleton()->checkLogFileIsNotAccessible();
+    CRM_Utils_Check_Security::singleton()->checkUploadsAreNotAccessible();
+    CRM_Utils_Check_Security::singleton()->checkDirectoriesAreNotBrowseable();
   }
 
   /**
@@ -198,48 +205,6 @@ class CRM_Utils_Check_Security {
     $log_name = $log->_filename;
     $filePathMarker = $this->getFilePathMarker();
 
-<<<<<<< HEAD
-    // @TODO: Test with WordPress, Joomla.
-    switch ($config->userFramework) {
-      // Drupal style - look for '/files/' and stitch the known paths
-      // (based on CIVICRM_TEMPLATE_COMPILEDIR and URL settings)
-      // together.
-      case 'Drupal':
-      case 'Drupal6':
-      default:
-        $paths = array(
-          $config->uploadDir,
-          dirname($log_name),
-        );
-        if ($upload_url = explode('/files/', $config->imageUploadURL)) {
-          if ($files = glob($config->uploadDir . '/*')) {
-            foreach ($paths as $path) {
-              // Since we're here ...
-              $dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-              foreach ($dir as $name => $object) {
-                if (is_dir($name) && $name != '..') {
-                  $nobrowse = realpath($name) . '/index.html';
-                  if (!file_exists($nobrowse)) {
-                    @file_put_contents($nobrowse, '');
-                  }
-                }
-              }
-              // OK, now let's see if it's browseable.
-              if ($dir_path = explode('/files/', $path)) {
-                $url = implode('/files/', array($upload_url[0], $dir_path[1]));
-                if ($files = glob($path . '/*')) {
-                  if ($listing = @file_get_contents($url)) {
-                    foreach ($files as $file) {
-                      if (stristr($listing, $file)) {
-                        $msg = 'Directory <a href="%1">%2</a> may be browseable via the web.'
-                          . '<br />' .
-                          '<a href="%3">Read more about this warning</a>';
-                        $docs_url = 'http://wiki.civicrm.org/confluence/display/CRMDOC/Security/UploadDirNotAccessible';
-                        $msg = ts($msg, array(1 => $log_url, 2 => $path, 3 => $docs_url));
-                        CRM_Core_Session::setStatus($msg, ts('Security Warning'));
-                      }
-                    }
-=======
     $paths = array(
       $config->uploadDir,
       dirname($log_name),
@@ -259,7 +224,6 @@ class CRM_Utils_Check_Security {
                     $docs_url = 'http://wiki.civicrm.org/confluence/display/CRMDOC/Security/UploadDirNotAccessible';
                     $msg = ts($msg, array(1 => $log_url, 2 => $path, 3 => $docs_url));
                     CRM_Core_Session::setStatus($msg, ts('Security Warning'));
->>>>>>> 5c58b44... Account for differing path structures in different CMS backends.
                   }
                 }
               }
