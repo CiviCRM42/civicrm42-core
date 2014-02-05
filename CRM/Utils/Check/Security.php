@@ -61,7 +61,7 @@ class CRM_Utils_Check_Security {
    * @TODO This function might be better shared in CRM_Utils_Check
    * class, but that class doesn't yet exist.
    */
-  static function getFilePathMarker() {
+  public function getFilePathMarker() {
     $config = CRM_Core_Config::singleton();
     switch ($config->userFramework) {
       case 'Joomla':
@@ -119,7 +119,7 @@ class CRM_Utils_Check_Security {
     $log_filename = $log->_filename;
 
     $config = CRM_Core_Config::singleton();
-    $filePathMarker = CRM_Utils_Check_Security::getFilePathMarker();
+    $filePathMarker = $this->getFilePathMarker();
 
     // Hazard a guess at the URL of the logfile, based on common
     // CiviCRM layouts.
@@ -156,7 +156,7 @@ class CRM_Utils_Check_Security {
    */
   public function checkUploadsAreNotAccessible() {
     $config = CRM_Core_Config::singleton();
-    $filePathMarker = CRM_Utils_Check_Security::getFilePathMarker();
+    $filePathMarker = $this->getFilePathMarker();
 
     if ($upload_url = explode($filePathMarker, $config->imageUploadURL)) {
       if ($files = glob($config->uploadDir . '/*')) {
@@ -196,7 +196,7 @@ class CRM_Utils_Check_Security {
     $config = CRM_Core_Config::singleton();
     $log = CRM_Core_Error::createDebugLogger();
     $log_name = $log->_filename;
-    $filePathMarker = CRM_Utils_Check_Security::getFilePathMarker();
+    $filePathMarker = $this->getFilePathMarker();
 
 <<<<<<< HEAD
     // @TODO: Test with WordPress, Joomla.
