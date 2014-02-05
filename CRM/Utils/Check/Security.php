@@ -78,6 +78,11 @@ class CRM_Utils_Check_Security {
     if (CRM_Core_Permission::check('administer CiviCRM')) {
       $session = CRM_Core_Session::singleton();
       if ($session->timer('check_' . __CLASS__, self::CHECK_TIMER)) {
+
+        // Best attempt at re-securing folders
+        $config = CRM_Core_Config::singleton();
+        $config->cleanup(0, FALSE);
+
         foreach ($this->checkAll() as $message) {
           CRM_Core_Session::setStatus($message, ts('Security Warning'));
         }
@@ -134,7 +139,6 @@ class CRM_Utils_Check_Security {
     $log = CRM_Core_Error::createDebugLogger();
     $log_filename = $log->_filename;
 
-    $config = CRM_Core_Config::singleton();
     $filePathMarker = $this->getFilePathMarker();
 
     // Hazard a guess at the URL of the logfile, based on common
