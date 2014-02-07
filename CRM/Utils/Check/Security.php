@@ -33,7 +33,9 @@
  *
  */
 class CRM_Utils_Check_Security {
-
+  CONST
+  // How often to run checks and notify admins about issues.
+  CHECK_TIMER = 86400;
   /**
    * We only need one instance of this object, so we use the
    * singleton pattern and cache the instance in this variable

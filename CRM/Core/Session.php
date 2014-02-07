@@ -307,6 +307,28 @@ class CRM_Core_Session {
   }
 
   /**
+   * Set and check a timer. If it's expired, it will be set again.
+   * Good for showing a message to the user every hour or day (so not bugging them on every page)
+   * Returns true-ish values if the timer is not set or expired, and false if the timer is still running
+   * If you want to get more nuanced, you can check the type of the return to see if it's 'not set' or actually expired at a certain time
+   *
+   * @access public
+   *
+   * @param  string name : name of the timer
+   * @param  int expire  : expiry time (in seconds)
+   *
+   * @return mixed
+   *
+   */
+  function timer($name, $expire) {
+    $ts = $this->get($name, 'timer');
+    if (!$ts || $ts < time() - $expire) {
+      $this->set($name, time(), 'timer');
+      return $ts ? $ts : 'not set';
+    }
+    return false;
+  }
+  /**
    * adds a userContext to the stack
    *
    * @param string  $userContext the url to return to when done

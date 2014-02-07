@@ -45,6 +45,11 @@ class CRM_Utils_String {
   CONST COMMA = ",", SEMICOLON = ";", SPACE = " ", TAB = "\t", LINEFEED = "\n", CARRIAGELINE = "\r\n", LINECARRIAGE = "\n\r", CARRIAGERETURN = "\r";
 
   /**
+   * List of all letters and numbers
+   */
+  const ALPHANUMERIC = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+
+  /**
    * Convert a display name into a potential variable
    * name that we could use in forms/code
    *
@@ -608,6 +613,20 @@ class CRM_Utils_String {
       return substr($string, 0, $maxLen-3) . '...';
     }
   }
-
+  /**
+   * Generate a random string
+   *
+   * @param $len
+   * @param $alphabet
+   * @return string
+   */
+  public static function createRandom($len, $alphabet) {
+    $alphabetSize = strlen($alphabet);
+    $result = '';
+    for ($i = 0; $i < $len; $i++) {
+      $result .= $alphabet{rand(1, $alphabetSize) - 1};
+    }
+    return $result;
+  }
 }
 

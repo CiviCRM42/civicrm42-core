@@ -230,5 +230,12 @@ class CRM_Utils_VersionCheck {
   function downloadError($errorNumber, $errorString) {
     return;
   }
+
+  /**
+   * Alert the site admin of new versions of CiviCRM
+   * Show the message once a day
+   */
+  public function versionAlert() {
+  }
 }
 
