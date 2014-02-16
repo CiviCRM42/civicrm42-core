@@ -1267,12 +1267,10 @@ class CRM_Report_Form extends CRM_Core_Form {
     list($from, $to) = self::getFromTo($relative, $from, $to, $fromTime, $toTime);
 
     if ($from) {
-      $from = ($type == CRM_Utils_Type::T_DATE) ? substr($from, 0, 8) : $from;
       $clauses[] = "( {$fieldName} >= $from )";
     }
 
     if ($to) {
-      $to = ($type == CRM_Utils_Type::T_DATE) ? substr($to, 0, 8) : $to;
       $clauses[] = "( {$fieldName} <= {$to} )";
     }
 
@@ -2208,13 +2206,13 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE && CRM_Utils_Array::value('operatorType', $field) != CRM_Report_Form::OP_MONTH) {
-            list($from, $to) = $this->getFromTo(CRM_Utils_Array::value("{$fieldName}_relative", $this->_params),
+            list($from, $to) = self::getFromTo(CRM_Utils_Array::value("{$fieldName}_relative", $this->_params),
                                CRM_Utils_Array::value("{$fieldName}_from", $this->_params),
                                CRM_Utils_Array::value("{$fieldName}_to", $this->_params),
-                               isset($this->_params["{$fieldName}_from_time"])
-                               ? date('his', strtotime(CRM_Utils_Array::value("{$fieldName}_from_time", $this->_params), '000000')) : '000000',
-                               isset($this->_params["{$fieldName}_to_time"])
-                               ? date('his', strtotime(CRM_Utils_Array::value("{$fieldName}_to_time", $this->_params), '235959')) : '235959'
+                               !empty($this->_params["{$fieldName}_from_time"])
+                               ? date('His', strtotime(CRM_Utils_Array::value("{$fieldName}_from_time", $this->_params), '000000')) : '000000',
+                               !empty($this->_params["{$fieldName}_to_time"])
+                               ? date('His', strtotime(CRM_Utils_Array::value("{$fieldName}_to_time", $this->_params), '235959')) : '235959'
             );
             $from = CRM_Utils_Date::customFormat($from, NULL, array('d'));
             $to = CRM_Utils_Date::customFormat($to, NULL, array('d'));
