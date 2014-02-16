@@ -503,3 +503,33 @@ function civicrm_api3_job_disable_expired_relationships($params) {
     return civicrm_api3_create_error('Failed to disable all expired relationships.');
   }
 }
+
+/**
+ * Adjust metadata for "Create" action
+ *
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_job_create_spec(&$params) {
+  $params['run_frequency']['api.required'] = 1;
+  $params['name']['api.required'] = 1;
+  $params['api_entity']['api.required'] = 1;
+  $params['api_action']['api.required'] = 1;
+
+  $params['domain_id']['api.default'] = CRM_Core_Config::domainID();
+  $params['is_active']['api.default'] = 1;
+}
+
+/**
+ * Function to create scheduled job
+ *
+ * @param  array $params   Associative array of property name/value pairs to insert in new job.
+ *
+ * @return success or error
+ * {@getfields Job_create}
+ * @access public
+ * {@schema Core/Job.xml}
+ */
+function civicrm_api3_job_create($params) {
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+}
