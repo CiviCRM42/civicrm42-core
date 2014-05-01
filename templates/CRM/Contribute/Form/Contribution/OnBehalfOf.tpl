@@ -83,9 +83,25 @@
                 {/foreach}
               </tr>
               </table>
-              {/strip}
-              {if $onBehalfOfFields.$fieldName.help_post}
-                 <span class='description'>{$onBehalfOfFields.$fieldName.help_post}</span>
+            {if $onBehalfOfFields.$fieldName.help_post}
+              <span class='description'>{$onBehalfOfFields.$fieldName.help_post}</span>
+            {/if}
+          </div>
+        {else}
+          <div class="label">{$form.onbehalf.$fieldName.label}</div>
+          <div class="content">
+            {if $fieldName eq 'organization_name' and !empty($form.onbehalfof_id)}
+              {$form.onbehalfof_id.html}
+            {/if}
+            {$form.onbehalf.$fieldName.html}
+            {if !empty($onBehalfOfFields.$fieldName.html_type)  && $onBehalfOfFields.$fieldName.html_type eq 'Autocomplete-Select'}
+              {assign var=elementName value=onbehalf[$fieldName]}
+            {include file="CRM/Custom/Form/AutoComplete.tpl" element_name=$elementName}
+            {/if}
+            {if $onBehalfOfFields.$fieldName.name|substr:0:5 eq 'phone'}
+              {assign var="phone_ext_field" value=$onBehalfOfFields.$fieldName.name|replace:'phone':'phone_ext'}
+              {if $form.onbehalf.$phone_ext_field.html}
+                &nbsp;{$form.onbehalf.$phone_ext_field.html}
               {/if}
             </div>
           {else}
@@ -114,11 +130,6 @@
 
 {literal}
 <script type="text/javascript">
-var reset            = {/literal}"{$reset}"{literal};
-var onBehalfRequired = {/literal}"{$onBehalfRequired}"{literal};
-var mainDisplay      = {/literal}"{$mainDisplay}"{literal};
-var mode             = {/literal}"{$mode}"{literal};
-
 if ( mainDisplay ) {
     showOnBehalf( false );
 }
@@ -227,24 +238,24 @@ function setLocationDetails( contactID )
     });
 }
 
-cj( "input:radio[name='org_option']" ).click( function( ) {
+cj("input:radio[name='org_option']").click( function( ) {
   var orgOption = cj(this).val();
-  selectCreateOrg( orgOption, true );
+  selectCreateOrg(orgOption, true);
 });
 
 cj('#onbehalfof_id').change(function() {
   setLocationDetails(cj(this).val());
 }).change();
 
-function selectCreateOrg( orgOption, reset )
-{
-    if ( orgOption == 0 ) {
-      cj("#onbehalfof_id").show().change();
-      cj("input#onbehalf_organization_name").hide();
-    } else if ( orgOption == 1 ) {
-      cj("input#onbehalf_organization_name").show();
-      cj("#onbehalfof_id").hide();
-    }
+function selectCreateOrg( orgOption, reset ) {
+  if (orgOption == 0) {
+    cj("#onbehalfof_id").show().change();
+    cj("input#onbehalf_organization_name").hide()
+  }
+  else if ( orgOption == 1 ) {
+    cj("input#onbehalf_organization_name").show();
+    cj("#onbehalfof_id").hide();
+  }
 
     if ( reset ) {
         resetValues();
