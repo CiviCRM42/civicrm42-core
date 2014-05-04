@@ -42,7 +42,7 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf {
    */
   static function preProcess(&$form) {
     $session = CRM_Core_Session::singleton();
-    $contactID = $session->get('userID');
+    $contactID = $form->_contactID;
 
     $ufJoinParams = array(
       'module' => 'onBehalf',
@@ -72,11 +72,17 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf {
       if (!empty($form->_employers)) {
         $form->_relatedOrganizationFound = TRUE;
 
-        $locDataURL = CRM_Utils_System::url('civicrm/ajax/permlocation', 'cid=', FALSE, NULL, FALSE);
+        // Related org url - pass checksum if needed
+        $args = array('cid' => '');
+        if (!empty($_GET['cs'])) {
+          $args = array(
+            'uid' => $form->_contactID,
+            'cs' => $_GET['cs'],
+            'cid' => '',
+            );
+          }
+        $locDataURL = CRM_Utils_System::url('civicrm/ajax/permlocation', $args, FALSE, NULL, FALSE);
         $form->assign('locDataURL', $locDataURL);
-
-        $dataURL = CRM_Utils_System::url('civicrm/ajax/employer', 'cid=' . $contactID, FALSE, NULL, FALSE);
-        $form->assign('employerDataURL', $dataURL);
       }
 
       if ($form->_values['is_for_organization'] != 2) {
@@ -110,14 +116,14 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf {
     $form->assign('fieldSetTitle', ts('Organization Details'));
     $form->assign('buildOnBehalfForm', TRUE);
 
-    $session = CRM_Core_Session::singleton();
-    $contactID = $session->get('userID');
+    $contactID = $form->_contactID;
 
     if ($contactID && count($form->_employers) >= 1) {
       $form->add('text', 'organization_id', ts('Select an existing related Organization OR enter a new one'));
-      $form->add('hidden', 'onbehalfof_id', '', array('id' => 'onbehalfof_id'));
+      $form->add('select', 'onbehalfof_id', '', CRM_Utils_Array::collect('name', $form->_employers));
 
-      $orgOptions = array(0 => ts('Select an existing organization'),
+      $orgOptions = array(
+        0 => ts('Select an existing organization'),
         1 => ts('Enter a new organization'),
       );
 
