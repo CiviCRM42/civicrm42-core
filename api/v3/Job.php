@@ -533,3 +533,31 @@ function _civicrm_api3_job_create_spec(&$params) {
 function civicrm_api3_job_create($params) {
   return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
+
+/**
+ * Retrieve one or more job
+ * @param  array input parameters
+ * @return  array api result array
+ * {@getfields email_get}
+ * @access public
+ */
+function civicrm_api3_job_get($params) {
+  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+}
+
+/**
+ * Delete a job
+ *
+ * @param $params
+ *
+ * @internal param int $id
+ *
+ * @return array API Result Array
+ * {@getfields Job_delete}
+ * @static void
+ * @access public
+ */
+function civicrm_api3_job_delete($params) {
+  _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+}
+
