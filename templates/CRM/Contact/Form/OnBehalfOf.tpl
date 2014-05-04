@@ -69,16 +69,7 @@
  	<fieldset><legend></legend>
  {/if}
 	<div class="crm-section organizationName-section">
-      {if $relatedOrganizationFound}
-      <div class="section crm-section">
-		<div class="content">{$form.org_option.html}</div>
-      </div>
-      <div id="select_org" class="crm-section select_org-section">
-        <div class="label">{$form.organization_name.label}</div>	   
-        <div class="content">{$form.organization_id.html|crmReplace:class:big}</div>
-      </div>
-      {/if}  
-      <div id="create_org" class="crm-section create_org-section">
+    <div id="create_org" class="crm-section create_org-section">
 		<div class="label">{$form.organization_name.label}</div>
         <div class="content">{$form.organization_name.html|crmReplace:class:big}</div>
         <div class="clear"></div>
@@ -229,52 +220,3 @@
          invert              = "false"
     }
 {/if}
-
-{literal}
-<script type="text/javascript">
-{/literal}
-{* If mid present in the url, take the required action (poping up related existing contact ..etc) *}
-{if $membershipContactID}
-    {literal}
-    cj( function( ) {
-        cj( '#organization_id' ).val("{/literal}{$membershipContactName}{literal}");
-        cj( '#organization_name' ).val("{/literal}{$membershipContactName}{literal}");
-        cj( '#onbehalfof_id' ).val("{/literal}{$membershipContactID}{literal}");
-        setLocationDetails( "{/literal}{$membershipContactID}{literal}" );
-    });
-    {/literal}
-{/if}
-{* Javascript method to populate the location fields when a different existing related contact is selected *}
-{literal}
-    var dataUrl   = "{/literal}{$employerDataURL}{literal}";
-    cj('#organization_id').autocomplete( dataUrl, { width : 180, selectFirst : false, matchContains: true
-    }).result( function(event, data, formatted) {
-        cj('#organization_name').val( data[0] );
-        cj('#onbehalfof_id').val( data[1] );
-        setLocationDetails( data[1] );
-    });
- 
-    var orgId = {/literal}"{$orgId}"{literal};
-    if ( orgId ) {
-        setLocationDetails( orgId );
-    }
-
-    function setLocationDetails( contactID ) {
-        var locationUrl = {/literal}"{$locDataURL}"{literal}+ contactID + "&relContact=1"; 
-        
-        cj.ajax({
-            url         : locationUrl,
-            dataType    : "json",
-            timeout     : 5000, //Time in milliseconds
-            success     : function( data, status ) {
-                for (var ele in data) {
-                    cj( "#"+ele ).val( data[ele] );
-                }
-            },
-            error       : function( XMLHttpRequest, textStatus, errorThrown ) {
-                console.error("HTTP error status: ", textStatus);
-            }
-        });
-    }
-</script>
-{/literal}
