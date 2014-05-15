@@ -1009,6 +1009,69 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     return $this->getRootTitle() . $this->getTitle();
   }
 
+  /**
+   * Get contact if for a form object. Prioritise
+   *  - cid in URL if 0 (on behalf on someoneelse)
+   *      (@todo consider setting a variable if onbehalf for clarity of downstream 'if's
+   *  - logged in user id if it matches the one in the cid in the URL
+   *  - contact id validated from a checksum from a checksum
+   *  - cid from the url if the caller has ACL permission to view
+   *  - fallback is logged in user (or ? NULL if no logged in user) (@todo wouldn't 0 be more intuitive?)
+   *
+   * @return Ambigous <mixed, NULL, value, unknown, array, number>|unknown
+   */
+  function getContactID() {
+    $tempID = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+    if(isset($this->_params) && isset($this->_params['select_contact_id'])) {
+      $tempID = $this->_params['select_contact_id'];
+    }
+    if(isset($this->_params, $this->_params[0]) && !empty($this->_params[0]['select_contact_id'])) {
+      // event form stores as an indexed array, contribution form not so much...
+      $tempID = $this->_params[0]['select_contact_id'];
+    }
+
+    // force to ignore the authenticated user
+    if ($tempID === '0' || $tempID === 0) {
+      // we set the cid on the form so that this will be retained for the Confirm page
+      // in the multi-page form & prevent us returning the $userID when this is called
+      // from that page
+      // we don't really need to set it when $tempID is set because the params have that stored
+      $this->set('cid', 0);
+      return $tempID;
+    }
+
+    $userID = $this->getLoggedInUserContactID();
+
+    if ($tempID == $userID) {
+    return $userID;
+    }
+
+    //check if this is a checksum authentication
+    $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
+    if ($userChecksum) {
+    //check for anonymous user.
+      $validUser = CRM_Contact_BAO_Contact_Utils::validChecksum($tempID, $userChecksum);
+      if ($validUser) {
+      return $tempID;
+    }
+    }
+      // check if user has permission, CRM-12062
+      else if ($tempID && CRM_Contact_BAO_Contact_Permission::allow($tempID)) {
+      return $tempID;
+  }
+
+  return $userID;
+  }
+
+  /**
+   * Get the contact id of the logged in user
+   */
+  function getLoggedInUserContactID() {
+    // check if the user is logged in and has a contact ID
+    $session = CRM_Core_Session::singleton();
+    return $session->get('userID');
+  }
+
   static
   function &getTemplate() {
     return self::$_template;

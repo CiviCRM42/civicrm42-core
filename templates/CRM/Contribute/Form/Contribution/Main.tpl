@@ -23,12 +23,13 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+
 {if $ppType}
   {include file="CRM/Core/BillingBlock.tpl"}
  {if $is_monetary}
   {* Put PayPal Express button after customPost block since it's the submit button in this case. *}
   {if $paymentProcessor.payment_processor_type EQ 'PayPal_Express'}
-  <div id="paypalExpress">   
+  <div id="paypalExpress">
      {assign var=expressButtonName value='_qf_Main_upload_express'}
       <fieldset class="crm-group paypal_checkout-group">
         <legend>{ts}Checkout with PayPal{/ts}</legend>
@@ -47,10 +48,10 @@
         </div>
         </div>
       </fieldset>
-   </div> 
+   </div>
   {/if}
  {/if}
-    
+
 {elseif $onbehalf}
    {include file=CRM/Contribute/Form/Contribution/OnBehalfOf.tpl}
 {else}
@@ -457,9 +458,9 @@ function toggleConfirmButton() {
 
    if (payPalExpressId !=0 && payPalExpressId == processorTypeId) {
       hide("crm-submit-buttons");
-   } else {	
+   } else {
       show("crm-submit-buttons");
-   } 
+   }
 }
 
 cj('input[name="payment_processor"]').change( function() {

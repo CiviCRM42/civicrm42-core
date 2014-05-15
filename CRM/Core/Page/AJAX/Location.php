@@ -46,7 +46,7 @@ class CRM_Core_Page_AJAX_Location {
    * This method is used by on-behalf-of form to dynamically generate poulate the
    * location field values for selected permissioned contact.
    */
-  function getPermissionedLocation() {
+  static function getPermissionedLocation() {
     $cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject, TRUE);
     $ufId = CRM_Utils_Request::retrieve('ufId', 'Integer', CRM_Core_DAO::$_nullObject, TRUE);
 
