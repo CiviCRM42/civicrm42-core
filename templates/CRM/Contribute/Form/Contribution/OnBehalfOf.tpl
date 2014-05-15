@@ -162,7 +162,7 @@ function showOnBehalf( onBehalfRequired )
 
 function resetValues() {
   cj('input[type=text], select, textarea', "#select_org div").not('#onbehalfof_id').val('');
-  cj('input[type=radio], input[type=checkbox]', "#select_org tr td").prop('checked', false);}
+  cj('input[type=radio], input[type=checkbox]', "#select_org tr td").prop('checked', false);
 }
 
 function createNew( )
