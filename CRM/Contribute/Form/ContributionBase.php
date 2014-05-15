@@ -152,6 +152,13 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    */
   public $_pcpInfo;
 
+  /**
+   * The contact id of the person for whom membership is being added or renewed based on the cid in the url,
+   * checksum, or session
+   * @var int
+   */
+  public $_contactID;
+
   protected $_userID;
 
   /**
@@ -179,7 +186,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
   public $_priceSet;
 
   public $_action;
-  
+
   /**
    * Function to set variables up before form is built
    *
@@ -257,7 +264,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     $this->_paymentProcessor = $this->get('paymentProcessor');
     $this->_priceSetId = $this->get('priceSetId');
     $this->_priceSet = $this->get('priceSet');
-        
+
     if (!$this->_values) {
       // get all the values from the dao object
       $this->_values = array();
@@ -299,7 +306,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
         $this->_paymentProcessors = CRM_Core_BAO_PaymentProcessor::getPayments($ppIds,
           $this->_mode
         );
-        
+
         $this->set('paymentProcessors', $this->_paymentProcessors);
 
         //set default payment processor
@@ -311,10 +318,10 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
             }
           }
         }
-        
+
         if (isset($defaultProcessorId)) {
           $this->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($defaultProcessorId, $this->_mode);
-          $this->assign_by_ref('paymentProcessor', $this->_paymentProcessor);    
+          $this->assign_by_ref('paymentProcessor', $this->_paymentProcessor);
         }
 
         if (!CRM_Utils_System::isNull($this->_paymentProcessors)) {

@@ -43,7 +43,9 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf {
   static function preProcess(&$form) {
     $session = CRM_Core_Session::singleton();
     $contactID = $form->_contactID;
-
+    if(empty($contactID)) {
+      $contactID =  $form->getContactID();
+    }
     $ufJoinParams = array(
       'module' => 'onBehalf',
       'entity_table' => 'civicrm_contribution_page',
@@ -117,6 +119,9 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf {
     $form->assign('buildOnBehalfForm', TRUE);
 
     $contactID = $form->_contactID;
+    if(empty($contactID)) {
+      $contactID = $form->getContactID();
+    }
 
     if ($contactID && count($form->_employers) >= 1) {
       $form->add('text', 'organization_id', ts('Select an existing related Organization OR enter a new one'));
