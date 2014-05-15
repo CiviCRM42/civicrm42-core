@@ -34,7 +34,7 @@
         {$form.org_option.html}
        </div>
     </div>
-  {/if}  
+  {/if}
 
   <div id="select_org" class="crm-section">
     {foreach from=$form.onbehalf item=field key=fieldName}
@@ -42,7 +42,7 @@
       {if $onBehalfOfFields.$fieldName.help_pre}
         &nbsp;&nbsp;<span class='description'>{$onBehalfOfFields.$fieldName.help_pre}</span>
       {/if}
-      
+
        {if ( $fieldName eq 'organization_name' ) and $organizationName}
          <div id='org_name' class="label">{$field.label}</div>
          <div class="content">
@@ -59,29 +59,29 @@
          </div>
        {else}
           {if $onBehalfOfFields.$fieldName.options_per_line != 0}
-            <div class="label option-label">{$field.label}</div> 
-            <div class="content 3"> 
-              {assign var="count" value="1"} 
-              {strip} 
-              <table class="form-layout-compressed"> 
-              <tr> 
-                {* sort by fails for option per line. Added a variable to iterate through the element array*} 
-                {assign var="index" value="1"} 
-                {foreach name=outer key=key item=item from=$field} 
-                {if $index < 10} 
-                  {assign var="index" value=`$index+1`} 
-                {else} 
-                  <td class="labels font-light">{$field.$key.html}</td> 
-                  {if $count == $onBehalfOfFields.$fieldName.options_per_line} 
-                    </tr> 
-                    <tr> 
-                    {assign var="count" value="1"} 
-                  {else} 
-                       {assign var="count" value=`$count+1`} 
-                  {/if} 
-                {/if} 
-                {/foreach} 
-              </tr> 
+            <div class="label option-label">{$field.label}</div>
+            <div class="content 3">
+              {assign var="count" value="1"}
+              {strip}
+              <table class="form-layout-compressed">
+              <tr>
+                {* sort by fails for option per line. Added a variable to iterate through the element array*}
+                {assign var="index" value="1"}
+                {foreach name=outer key=key item=item from=$field}
+                {if $index < 10}
+                  {assign var="index" value=`$index+1`}
+                {else}
+                  <td class="labels font-light">{$field.$key.html}</td>
+                  {if $count == $onBehalfOfFields.$fieldName.options_per_line}
+                    </tr>
+                    <tr>
+                    {assign var="count" value="1"}
+                  {else}
+                       {assign var="count" value=`$count+1`}
+                  {/if}
+                {/if}
+                {/foreach}
+              </tr>
               </table>
               {/strip}
               {if $onBehalfOfFields.$fieldName.help_post}
@@ -143,18 +143,18 @@ function showOnBehalf( onBehalfRequired )
             if ( reset ) {
                 urlPath = urlPath + '&reset=' + reset;
             }
-       
+
             cj.ajax({
                  url     : urlPath,
                  async   : false,
 		         global  : false,
-	             success : function ( content ) { 		
+	             success : function ( content ) {
     	            cj( "#onBehalfOfOrg" ).html( content );
                  }
             });
-       
+
      } else {
-       cj( "#onBehalfOfOrg" ).html('');	
+       cj( "#onBehalfOfOrg" ).html('');
        cj( "#for_organization" ).html( '' );
        return;
      }
@@ -165,7 +165,7 @@ function resetValues() {
   cj('input[type=radio], input[type=checkbox]', "#select_org tr td").prop('checked', false);}
 }
 
-function createNew( ) 
+function createNew( )
 {
     if ( cj( "#mode" ).attr( 'checked' ) ) {
         $text = ' {/literal}{ts escape="js"}Use existing organization{/ts}{literal} ';
@@ -180,7 +180,7 @@ function createNew( )
     }
     cj( "#createNewOrg" ).text( $text );
 }
- 
+
 function setOrgName( )
 {
     var orgName = "{/literal}{$organizationName}{literal}";
@@ -190,8 +190,8 @@ function setOrgName( )
     setLocationDetails( orgId );
 }
 
-  
-function setLocationDetails( contactID ) 
+
+function setLocationDetails( contactID )
 {
     resetValues();
     var locationUrl = {/literal}"{$locDataURL}"{literal} + contactID + "&ufId=" + {/literal}"{$profileId}"{literal};
@@ -200,7 +200,7 @@ function setLocationDetails( contactID )
               dataType    : "json",
               timeout     : 5000, //Time in milliseconds
               success     : function( data, status ) {
-                for (var ele in data) { 
+                for (var ele in data) {
                    if ( data[ele].type == 'Radio' ) {
                        if ( data[ele].value ) {
                            cj( "input[name='"+ ele +"']" ).filter( "[value=" + data[ele].value + "]" ).attr( 'checked', 'checked' );
