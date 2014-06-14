@@ -182,10 +182,6 @@ SELECT module
       $this->_postURL = str_replace('&amp;', '&', $this->_postURL);
       $this->_cancelURL = str_replace('&amp;', '&', $this->_cancelURL);
 
-      if ($this->_cancelURL) {
-        $this->addElement('hidden', 'cancelURL', $this->_cancelURL);
-      }
-
       // also retain error URL if set
       $this->_errorURL = CRM_Utils_Array::value('errorURL', $_POST);
       if ($this->_errorURL) {
@@ -200,6 +196,24 @@ SELECT module
     }
 
     parent::buildQuickForm();
+
+    if (($this->_multiRecord & CRM_Core_Action::DELETE) && $this->_recordExists) {
+      $this->_deleteButtonName = $this->getButtonName('upload', 'delete');
+
+      $this->addElement('submit',
+        $this->_deleteButtonName,
+        ts('Delete')
+      );
+
+      $buttons[] = array(
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+        'isDefault' => TRUE,
+        'js' => array('onclick' => "location.href='{$this->_cancelURL}'; return false;"),
+      );
+      $this->addButtons($buttons);
+      return;
+    }
 
     //get the value from session, this is set if there is any file
     //upload field
@@ -223,6 +237,7 @@ SELECT module
         'type' => 'cancel',
         'name' => ts('Cancel'),
         'isDefault' => TRUE,
+        'js' => array('onclick' => "location.href='{$this->_cancelURL}'; return false;"),
       );
     }
 
