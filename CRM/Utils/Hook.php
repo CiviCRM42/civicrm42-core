@@ -457,6 +457,22 @@ abstract class CRM_Utils_Hook {
   }
 
   /**
+   * This hook is called when rendering the tabs
+   * used for events and potentially contribution pages, etc
+   * @param string $tabset   - name of the screen or visual element
+   * @param array $tabs      - the array of tabs that will be displayed
+   * @param array $context   - extra data about the screen or context in which the tab is used
+   *
+   * @return null
+   * @access public
+   */
+  static function tabset($tabsetName, &$tabs, $context) {
+    return self::singleton()->invoke(3, $tabsetName, $tabs,
+      $context, self::$_nullObject, self::$_nullObject, 'civicrm_tabset'
+    );
+  }
+
+  /**
    * This hook is called when sending an email / printing labels
    *
    * @param array $tokens    - the list of tokens that can be used for the contact
@@ -709,6 +725,16 @@ abstract class CRM_Utils_Hook {
       self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_caseSummary'
     );
+  }
+
+  /**
+   * This hook is called when locating CiviCase types.
+   *
+   * @param array $caseTypes
+   * @return void
+   */
+  static function caseTypes(&$caseTypes) {
+    return self::singleton()->invoke(1, $caseTypes, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_caseTypes');
   }
 
   /**
@@ -1105,6 +1131,14 @@ abstract class CRM_Utils_Hook {
     );
   }
 
+  static function alterReportVar($varType, &$var, &$object) {
+    return self::singleton()->invoke(3, $varType, $var, $object,
+      self::$_nullObject,
+      self::$_nullObject,
+      'civicrm_alterReportVar'
+    );
+  }
+
   /**
    * This hook is called to drive database upgrades for extension-modules.
    *
@@ -1167,6 +1201,53 @@ abstract class CRM_Utils_Hook {
   }
 
   /**
+   * This hook is called before running an api call.
+   *
+   * @param $wrappers array of implements API_Wrapper(see CRM/Utils/API/ReloadOption.php as an example)
+   *
+   * @return null the return value is ignored
+   * @access public
+   */
+  static function apiWrappers(&$wrappers, $apiRequest) {
+    return self::singleton()
+      ->invoke(2, $wrappers, $apiRequest, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      'civicrm_apiWrappers'
+    );
+  }
+
+  /**
+   * This hook is called before running pending cron jobs.
+   *
+   * @param CRM_Core_JobManager $jobManager
+   *
+   * @return null the return value is ignored
+   * @access public
+   */
+  static function cron($jobManager) {
+    return self::singleton()->invoke(1,
+      $jobManager, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      'civicrm_cron'
+    );
+  }
+
+  /**
+   * This hook is called when loading CMS permissions; use this hook to modify
+   * the array of system permissions for CiviCRM.
+   *
+   * @param Array $permissions Array of permissions. See CRM_Core_Permission::getCorePermissions()
+   *   for the format of this array.
+   *
+   * @return null the return value is ignored
+   * @access public
+   */
+  static function permission(&$permissions) {
+    return self::singleton()->invoke(1, $permissions,
+      self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      'civicrm_permission'
+    );
+  }
+
+  /**
    * This hook is called to alter the civicrm permissions available
    * to be provided to the CMS
    *
@@ -1180,6 +1261,92 @@ abstract class CRM_Utils_Hook {
       $permissions, self::$_nullObject, self::$_nullObject, self::$_nullObject, self::$_nullObject,
       'civicrm_permissions'
     );
+  }
+
+  /**
+   * This hook is called for declaring managed entities via API
+   *
+   * @param array $entities List of entity types; each entity-type is an array with keys:
+   *   - name: string, a unique short name (e.g. "ReportInstance")
+   *   - class: string, a PHP DAO class (e.g. "CRM_Report_DAO_Instance")
+   *   - table: string, a SQL table name (e.g. "civicrm_report_instance")
+   *
+   * @return null the return value is ignored
+   * @access public
+   */
+  static function entityTypes(&$entityTypes) {
+    return self::singleton()->invoke(1, $entityTypes, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, self::$_nullObject, 'civicrm_entityTypes'
+    );
+  }
+
+  /**
+   * This hook is called while preparing a profile form
+   *
+   * @param string $name
+   * @return void
+   */
+  static function buildProfile($name) {
+    return self::singleton()->invoke(1, $name, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_buildProfile');
+  }
+
+  /**
+   * This hook is called while validating a profile form submission
+   *
+   * @param string $name
+   * @return void
+   */
+  static function validateProfile($name) {
+    return self::singleton()->invoke(1, $name, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_validateProfile');
+  }
+
+  /**
+   * This hook is called processing a valid profile form submission
+   *
+   * @param string $name
+   * @return void
+   */
+  static function processProfile($name) {
+    return self::singleton()->invoke(1, $name, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_processProfile');
+  }
+
+  /**
+   * This hook is called while preparing a read-only profile screen
+   *
+   * @param string $name
+   * @return void
+   */
+  static function viewProfile($name) {
+    return self::singleton()->invoke(1, $name, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_viewProfile');
+  }
+
+  /**
+   * This hook is called while preparing a list of contacts (based on a profile)
+   *
+   * @param string $name
+   * @return void
+   */
+  static function searchProfile($name) {
+    return self::singleton()->invoke(1, $name, self::$_nullObject, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_searchProfile');
+  }
+
+  /**
+   * This hook is called before encoding data in barcode
+   *
+   * @param array  $data associated array of values available for encoding
+   * @param string $type type of barcode, classic barcode or QRcode
+   * @param string $context where this hooks is invoked.
+   *
+   * @return void
+   */
+  static function alterBarcode( &$data, $type = 'barcode', $context = 'name_badge' ) {
+    return self::singleton()->invoke(3, $data, $type, $context, self::$_nullObject,
+      self::$_nullObject, 'civicrm_alterBarcode');
   }
 
   /**
@@ -1197,4 +1364,25 @@ abstract class CRM_Utils_Hook {
     return self::singleton()
       ->invoke(3, $mailer, $driver, $params, self::$_nullObject, self::$_nullObject, 'civicrm_alterMailer');
   } 
+
+  /**
+   * This hook is called while building the core search query,
+   * so hook implementers can provide their own query objects which alters/extends core search.
+   *
+   * @param Array $queryObjects
+   * @return void
+   */
+  static function queryObjects(&$queryObjects, $type = 'Contact') {
+    return self::singleton()->invoke(2, $queryObjects, $type, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_queryObjects');
+  }
+
+  /**
+   * This hook is called while viewing contact dashboard
+   *
+   * @param array $availableDashlets list of dashlets; each is formatted per api/v3/Dashboard
+   * @param array $activeDashlets list of dashlets; each is formatted per api/v3/DashboardContact
+   */
+  static function dashboard_defaults($availableDashlets, &$defaultDashlets) {
+    return self::singleton()->invoke(2, $availableDashlets, $defaultDashlets, self::$_nullObject, self::$_nullObject, self::$_nullObject, 'civicrm_dashboard_defaults');
+  }
 }
