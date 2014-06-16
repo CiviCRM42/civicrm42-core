@@ -122,7 +122,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
       $err['tip'] = "add debug=1 to your API call to have more info about the error";
     }
     if (CRM_Utils_Array::value('is_transactional', $apiRequest)) {
-      $tx->rollback();
+      $transaction->rollback();
     }
     return $err;
   }
@@ -139,7 +139,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
       $err['trace'] = $e->getTraceAsString();
     }
     if (CRM_Utils_Array::value('is_transactional', CRM_Utils_Array::value('params',$apiRequest))) {
-      $tx->rollback();
+      $transaction->rollback();
     }
     return $err;
   }
@@ -153,7 +153,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
       $err['trace'] = $e->getTraceAsString();
     }
     if (CRM_Utils_Array::value('is_transactional', $apiRequest)) {
-      $tx->rollback();
+      $transaction->rollback();
     }
     return $err;
   }
