@@ -550,6 +550,10 @@ class CRM_Profile_Form extends CRM_Core_Form {
 
       CRM_Core_BAO_UFGroup::buildProfile($this, $field, $this->_mode);
 
+      if ($field['add_to_group_id']) {
+        $addToGroupId = $field['add_to_group_id'];
+      }
+
       //build array for captcha
       if ($field['add_captcha']) {
         $addCaptcha[$field['group_id']] = $field['add_captcha'];
@@ -591,6 +595,13 @@ class CRM_Profile_Form extends CRM_Core_Form {
       $captcha->add($this);
     }
     $this->assign("isCaptcha", $this->_isAddCaptcha);
+
+    if ($this->_mode != self::MODE_SEARCH) {
+      if (isset($addToGroupId)) {
+        $this->_ufGroup['add_to_group_id'] = $addToGroupId;
+      }
+    }
+
     // lets do the defaults, so we can use it for the below state country routines
     $this->setDefaultsValues();
 
