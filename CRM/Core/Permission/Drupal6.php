@@ -36,7 +36,7 @@
 /**
  *
  */
-class CRM_Core_Permission_Drupal6 {
+class CRM_Core_Permission_Drupal6 extends CRM_Core_Permission_DrupalBase{
 
   /**
    * is this user someone with access for the entire system
@@ -187,9 +187,9 @@ class CRM_Core_Permission_Drupal6 {
         $whereTables['civicrm_group_contact'] = 1;
 
         if($entityTable == 'civicrm_contact'){
-        // foreach group that is potentially a saved search, add the saved search clause if we are trying to determin
-        // which contacts can be seen. per CRM-10667 - we don't need to add smart group clauses if after a
-        // list of groups
+          // foreach group that is potentially a saved search, add the saved search clause if we are trying to determin
+          // which contacts can be seen. per CRM-10667 - we don't need to add smart group clauses if after a
+          // list of groups
 
         }
 
@@ -238,25 +238,23 @@ class CRM_Core_Permission_Drupal6 {
    * @param string $str the permission to check
    *
    * @return boolean true if yes, else false
-   * @static
    * @access public
    */
-  static
   function check($str, $contactID = NULL) {
+    $str = $this->translatePermission($str, 'Drupal6', array(
+      'view user account' => 'access user profiles',
+      'administer users' => 'administer users',
+    ));
+    if ($str == CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
+      return FALSE;
+    }
+    if ($str == CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION) {
+      return TRUE;
+    }
     if (function_exists('user_access')) {
       return user_access($str) ? TRUE : FALSE;
     }
     return TRUE;
-
-    /**
-     * lets introduce acl in 2.1
-     static $isAdmin = null;
-     if ( $isAdmin === null ) {
-     $session = CRM_Core_Session::singleton( );
-     $isAdmin = $session->get( 'ufID' ) == 1 ? true : false;
-     }
-     return ( $isAdmin) ? true : CRM_ACL_API::check( $str, $contactID );
-     */
   }
 
   /**
@@ -282,4 +280,3 @@ class CRM_Core_Permission_Drupal6 {
     return FALSE;
   }
 }
-
