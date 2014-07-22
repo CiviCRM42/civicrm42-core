@@ -90,7 +90,7 @@ class CRM_Core_Permission_Joomla extends CRM_Core_Permission_Base {
   static function check($str) {
     $config = CRM_Core_Config::singleton();
 
-    $translated = parent::translateJoomlaPermission($str);
+    $translated = self::translateJoomlaPermission($str);
     if ($translated === CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
       return FALSE;
     }
