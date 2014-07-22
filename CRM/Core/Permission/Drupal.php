@@ -255,8 +255,8 @@ class CRM_Core_Permission_Drupal extends CRM_Core_Permission_DrupalBase{
    * @return boolean true if yes, else false
    * @access public
    */
-  function check($str, $contactID = NULL) {
-    $str = $this->translatePermission($str, 'Drupal', array(
+  static function check($str, $contactID = NULL) {
+    $str = parent::translatePermission($str, 'Drupal', array(
       'view user account' => 'access user profiles',
       'administer users' => 'administer users',
     ));

@@ -28,8 +28,7 @@ class CRM_Core_Permission_BaseTest extends CiviUnitTestCase {
    * @param string $expected the name of an actual permission (based on translation matrix for "runtime")
    */
   public function testTranslate($input, $expected) {
-    $perm = new CRM_Core_Permission_Base();
-    $actual = $perm->translatePermission($input, "myruntime", array(
+    $actual = CRM_Core_Permission_Base::translatePermission($input, "myruntime", array(
       'universal name' => 'local name',
       'universal name2' => 'local name2',
       'gunk' => 'gunky',
