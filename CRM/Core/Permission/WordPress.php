@@ -36,7 +36,7 @@
 /**
  *
  */
-class CRM_Core_Permission_WordPress {
+class CRM_Core_Permission_WordPress extends CRM_Core_Permission_Base {
 
   /**
    * get the current permission of this user
