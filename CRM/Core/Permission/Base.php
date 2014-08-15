@@ -47,7 +47,7 @@ class CRM_Core_Permission_Base {
    *
    * @return NULL|string a permission name
    */
-  public function translatePermission($perm, $nativePrefix, $map) {
+  static public function translatePermission($perm, $nativePrefix, $map) {
     list ($civiPrefix, $name) = CRM_Utils_String::parsePrefix(':', $perm, NULL);
     switch ($civiPrefix) {
       case $nativePrefix:
