@@ -426,7 +426,7 @@ class CRM_Contact_Page_AJAX {
       if ($organization) {
 
         $query = "
-SELECT CONCAT_WS(' :: ',sort_name,LEFT(street_address,25),city) 'sort_name', 
+SELECT CONCAT_WS(' :: ',sort_name,LEFT(street_address,25),city) 'sort_name',
 civicrm_contact.id 'id'
 FROM civicrm_contact
 LEFT JOIN civicrm_address ON ( civicrm_contact.id = civicrm_address.contact_id
@@ -442,21 +442,21 @@ SELECT CONCAT_WS(':::' , sort_name, supplemental_address_1, sp.abbreviation, pos
       }
       elseif ($hh) {
         $query = "
-SELECT CONCAT_WS(' :: ' , sort_name, LEFT(street_address,25),city) 'sort_name' , location_type_id 'location_type_id', is_primary 'is_primary', is_billing 'is_billing', civicrm_contact.id 'id' 
-FROM civicrm_contact 
+SELECT CONCAT_WS(' :: ' , sort_name, LEFT(street_address,25),city) 'sort_name' , location_type_id 'location_type_id', is_primary 'is_primary', is_billing 'is_billing', civicrm_contact.id 'id'
+FROM civicrm_contact
 LEFT JOIN civicrm_address ON (civicrm_contact.id =civicrm_address.contact_id AND civicrm_address.is_primary =1 )
-WHERE civicrm_contact.contact_type ='Household' 
+WHERE civicrm_contact.contact_type ='Household'
 AND household_name LIKE '%$contactName%' {$addStreet} {$addCity} {$whereIdClause} ORDER BY household_name ";
       }
       elseif ($relType) {
         if (CRM_Utils_Array::value('case', $_GET)) {
           $query = "
 SELECT distinct(c.id), c.sort_name
-FROM civicrm_contact c 
+FROM civicrm_contact c
 LEFT JOIN civicrm_relationship ON civicrm_relationship.contact_id_{$rel} = c.id
 WHERE c.sort_name LIKE '%$name%'
 AND civicrm_relationship.relationship_type_id = $relType
-GROUP BY sort_name 
+GROUP BY sort_name
 ";
         }
       }
@@ -524,8 +524,8 @@ ORDER BY sort_name ";
 
   /**
    *
-   * Function to check how many contact exits in db for given criteria, 
-   * if one then return contact id else null                                                                                  
+   * Function to check how many contact exits in db for given criteria,
+   * if one then return contact id else null
    */
   static function contact() {
     $name = CRM_Utils_Type::escape($_GET['name'], 'String');
@@ -637,8 +637,12 @@ WHERE sort_name LIKE '%$name%'";
    *  Function to get email address of a contact
    */
   static function getContactEmail() {
-    if (CRM_Utils_Array::value('contact_id', $_POST)) {
-      $contactID = CRM_Utils_Type::escape($_POST['contact_id'], 'Positive');
+    if (CRM_Utils_Array::value('contact_id', $_REQUEST)) {
+      $contactID = CRM_Utils_Type::escape($_REQUEST['contact_id'], 'Positive');
+      if (!CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT)) {
+        return;
+      }
+
       list($displayName,
         $userEmail
       ) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
@@ -682,7 +686,7 @@ WHERE sort_name LIKE '%$name%'";
         if ($noemail) {
           $query = "
 SELECT sort_name name, cc.id
-FROM civicrm_contact cc 
+FROM civicrm_contact cc
      {$aclFrom}
 WHERE cc.is_deceased = 0 AND {$queryString}
       {$aclWhere}
@@ -775,7 +779,7 @@ LIMIT {$offset}, {$rowCount}
 
       $query = "
 SELECT sort_name name, cp.phone, cc.id
-FROM   civicrm_phone cp INNER JOIN civicrm_contact cc ON cc.id = cp.contact_id 
+FROM   civicrm_phone cp INNER JOIN civicrm_contact cc ON cc.id = cp.contact_id
        {$aclFrom}
 WHERE  cc.is_deceased = 0 AND cc.do_not_sms = 0 AND cp.phone_type_id = {$mobileType} AND {$queryString}
        {$aclWhere}
@@ -1077,7 +1081,7 @@ LIMIT {$offset}, {$rowCount}
     $selectorElements = array('src', 'dst', 'weight', 'actions');
 
 
-    $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
+    $join = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND
                                                              pn.entity_id2 = de.contact_id2 )";
     $where = "de.id IS NULL";
 
@@ -1146,7 +1150,7 @@ LIMIT {$offset}, {$rowCount}
     }
 
     echo json_encode($elements);
-    CRM_Utils_System::civiExit();  
+    CRM_Utils_System::civiExit();
   }
 
   static function selectUnselectContacts() {
@@ -1197,7 +1201,7 @@ LIMIT {$offset}, {$rowCount}
     if (!$contactId) {
       $addressVal["error_message"] = "no contact id found";
     } else {
-      $entityBlock = 
+      $entityBlock =
         array(
           'contact_id' => $contactId,
           'entity_id' => $contactId
@@ -1205,6 +1209,6 @@ LIMIT {$offset}, {$rowCount}
       $addressVal = CRM_Core_BAO_Address::getValues($entityBlock);
     }
     echo json_encode($addressVal);
-    CRM_Utils_System::civiExit();  
+    CRM_Utils_System::civiExit();
   }
 }
