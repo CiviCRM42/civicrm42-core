@@ -42,6 +42,7 @@ class CRM_Case_Page_AJAX {
    */
   static
   function unclosedCases() {
+    header('Content-Type: text/plain');
     $criteria = explode('-', CRM_Utils_Type::escape(CRM_Utils_Array::value('s', $_GET), 'String'));
 
     $limit = NULL;
