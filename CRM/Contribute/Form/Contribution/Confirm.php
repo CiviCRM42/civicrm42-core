@@ -1375,6 +1375,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
     // return if pending
     if ($pending) {
+       //CMS User also needs to be created if using pay later
+       //issue CRM-13074 broke this
+       CRM_Contribute_BAO_Contribution_Utils::createCMSUser($params,
+        $contactID,
+        'email-' . $form->_bltID
+      );
+
       return $contribution;
     }
 
